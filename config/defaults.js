@@ -13,7 +13,7 @@ module.exports = {
 
     // Azure table name for group listing
     groupsTableName: 'Groups',
-  
+
     // Azure account
     azureAccount:   undefined
   },
@@ -37,8 +37,14 @@ module.exports = {
     trustProxy: false
   },
 
+  azure:
+  {
+    accountName: undefined,
+    accountKey:  undefined
+  },
+
   // TaskCluster configuration
-  taskcluster: 
+  taskcluster:
   {
     // BaseUrl for auth, if default built-in baseUrl isn't provided
     authBaseUrl:   undefined,
