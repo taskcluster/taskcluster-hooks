@@ -1,14 +1,16 @@
 #!/usr/bin/env node
 var base        = require('taskcluster-base');
 var data        = require('../hooks/data');
-var debug       = require('debug')('hooks:bin:server');
+var debug       = require('debug')('hooks:schedule-hooks');
 var path        = require('path');
 var Promise     = require('promise');
 var Scheduler   = require('../hooks/scheduler');
-var taskcluster = require('taskcluster-client');
+var taskcreator = require('../hooks/taskcreator');
 
 /* Launch schedule-hooks */
-var launch = async function(profile) {
+var launch = async function(profile, options) {
+  options = options || {};
+
   debug("Launching with profile: %s", profile);
 
   // Load configuration
@@ -35,40 +37,26 @@ var launch = async function(profile) {
 
   // Create a validator
   debug("Waiting for resources to be created");
-  var validator;
-  await Promise.all([
-      (async () => {
-        validator = await base.validator({
-          folder:        path.join(__dirname, '..', 'schemas'),
-          constants:     require('../schemas/constants'),
-          publish:       cfg.get('hooks:publishMetaData') == 'true',
-          schemaPrefix:  'hooks/v1/',
-          preload: [
-            'http://schemas.taskcluster.net/queue/v1/create-task-request.json',
-            'http://schemas.taskcluster.net/queue/v1/task-status.json'
-          ]
-        });
-      })(),
-      Hook.ensureTable(),
-  ]);
+  await Hook.ensureTable();
 
   // Create scheduler
   var scheduler = new Scheduler({
     Hook:           Hook,
-    queue:          new taskcluster.Queue({
+    taskcreator:    new taskcreator.TaskCreator({
       credentials:  cfg.get('taskcluster:credentials'),
-      baseUrl:      cfg.get('taskcluster:queueBaseUrl')
     }),
     pollingDelay:   cfg.get('hooks:schedule:pollingDelay')
   });
 
   // Start scheduler
-  scheduler.start();
+  if (!options.noStart) {
+    scheduler.start();
+  }
 
   // Notify the parent process, so this worker can run using LocalApp
   base.app.notifyLocalAppInParentProcess();
 
-  return resolver;
+  return scheduler;
 };
 
 // If schedule-hooks.js is executed run launch

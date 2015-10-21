@@ -8,19 +8,27 @@ var _           = require('lodash');
 /** Entity for tracking hooks and associated state **/
 var Hook = base.Entity.configure({
   version:              1,
-  partitionKey:         base.Entity.keys.StringKey('groupId'),
+  partitionKey:         base.Entity.keys.StringKey('hookGroupId'),
   rowKey:               base.Entity.keys.StringKey('hookId'),
   properties:           {
-    groupId:            base.Entity.types.String,
+    hookGroupId:        base.Entity.types.String,
     hookId:             base.Entity.types.String,
     metadata:           base.Entity.types.JSON,
+    // task template
     task:               base.Entity.types.JSON,
+    // pulse bindings (TODO; empty for now)
     bindings:           base.Entity.types.JSON,
+    // timings for the task (in fromNow format, e.g., "1 day")
     deadline:           base.Entity.types.String,
     expires:            base.Entity.types.String,
+    // schedule for this task (see schemas/schedule.yml)
     schedule:           base.Entity.types.JSON,
-    accessToken:        base.Entity.types.SlugId,
+    // access token used to trigger this task via webhook
+    triggerToken:       base.Entity.types.SlugId,
+    // the taskId that will be used next time this hook is scheduled;
+    // this allows scheduling to be idempotent
     nextTaskId:         base.Entity.types.SlugId,
+    // next date at which this task is scheduled to run
     nextScheduledDate:  base.Entity.types.Date,
   }
 });
@@ -28,40 +36,15 @@ var Hook = base.Entity.configure({
 /** Return promise for hook definition */
 Hook.prototype.definition = function() {
   return Promise.resolve({
-    hookId:   this.hookId,
-    groupId:  this.groupId,
-    metadata: _.cloneDeep(this.metadata),
-    task:     _.cloneDeep(this.task),
-    bindings: _.cloneDeep(this.bindings),
-    schedule: _.cloneDeep(this.schedule),
-    deadline: this.deadline,
-    expires:  this.expires
+    hookId:       this.hookId,
+    hookGroupId:  this.hookGroupId,
+    metadata:     _.cloneDeep(this.metadata),
+    task:         _.cloneDeep(this.task),
+    schedule:     _.cloneDeep(this.schedule),
+    deadline:     this.deadline,
+    expires:      this.expires
   });
 };
 
-Hook.prototype.taskPayload = function() {
-  let payload = _.cloneDeep(this.task);
-  payload.created = new Date().toJSON();
-  payload.deadline = taskcluster.fromNow(this.deadline).toJSON();
-  if (this.expires) {
-    payload.expires = taskcluster.fromNow(this.expires).toJSON();
-  }
-  return Promise.resolve(payload);
-}
-
 // export Hook
 exports.Hook = Hook;
-
-
-/** Entity for tracking all groups **/
-var Groups = base.Entity.configure({
-  version:       1,
-  partitionKey:  base.Entity.keys.ConstantKey('GroupKeys'),
-  rowKey:        base.Entity.keys.StringKey('groupId'),
-  properties: {
-    groupId:     base.Entity.types.String
-  }
-});
-
-// export Groups
-exports.Groups = Groups;

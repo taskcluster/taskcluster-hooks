@@ -2,8 +2,11 @@ module.exports = {
   hooks:
   {
     publishMetaData:  'false',
-    hookTableName:    'TestHooks',
-    groupsTableName:  'TestGroups'
+    hookTableName:    'TestHooks3',
+    schedule:
+    {
+      pollingDelay: 1
+    }
   },
 
   taskcluster:
@@ -11,8 +14,8 @@ module.exports = {
     authBaseUrl:      'http://localhost:60407/v1',
     credentials:
     {
-      clientId:       "test-server",
-      accessToken:    "none"
+      clientId:       undefined,
+      accessToken:    undefined
     }
   },
 
