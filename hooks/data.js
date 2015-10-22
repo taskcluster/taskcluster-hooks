@@ -10,6 +10,7 @@ var Hook = base.Entity.configure({
   version:              1,
   partitionKey:         base.Entity.keys.StringKey('hookGroupId'),
   rowKey:               base.Entity.keys.StringKey('hookId'),
+  signEntities:         true,
   properties:           {
     hookGroupId:        base.Entity.types.String,
     hookId:             base.Entity.types.String,
@@ -24,10 +25,10 @@ var Hook = base.Entity.configure({
     // schedule for this task (see schemas/schedule.yml)
     schedule:           base.Entity.types.JSON,
     // access token used to trigger this task via webhook
-    triggerToken:       base.Entity.types.SlugId,
+    triggerToken:       base.Entity.types.EncryptedText,
     // the taskId that will be used next time this hook is scheduled;
     // this allows scheduling to be idempotent
-    nextTaskId:         base.Entity.types.SlugId,
+    nextTaskId:         base.Entity.types.EncryptedText,
     // next date at which this task is scheduled to run
     nextScheduledDate:  base.Entity.types.Date,
   }
