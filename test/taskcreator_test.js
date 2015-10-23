@@ -9,7 +9,7 @@ suite('TaskCreator', function() {
   this.slow(500);
 
   // these tests require TaskCluster credentials (for the queue insert)
-  if (!helper.hasTcCredentials || !helper.hasAzureCredentials) {
+  if (!helper.hasTcCredentials) {
     this.pending = true;
   }
 

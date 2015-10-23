@@ -1,0 +1,13 @@
+defaults:
+test:
+  # Credentials to be specified for tests to work
+  # notice that you can also specify these by environment variables
+  influx:
+    connectionString: '...'
+  taskcluster:
+    # should have the scopes:
+    #  - 'auth:azure-table-access:jungle/*'
+    #  - 'queue:create-task:no-provisioner/test-worker'
+    credentials:
+      clientId:       '...'
+      accessToken:    '...'

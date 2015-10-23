@@ -5,7 +5,7 @@ suite('bin/schedule-hooks.js', function() {
   var helper            = require('./helper');
 
   // these tests require Azure credentials (for the Hooks table)
-  if (!helper.hasAzureCredentials) {
+  if (!helper.hasTcCredentials) {
     this.pending = true;
   }
 
