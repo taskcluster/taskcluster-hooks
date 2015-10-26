@@ -54,6 +54,9 @@ helper.setupApi = function() {
       clients:  defaultClients,
       credentials: cfg.taskcluster.credentials
     });
+    // 500ms as coded into tc-base doesn't work, this need to live here until we
+    // land a fix in tc-base (currently not brave enough to upgrade tc-base)
+    authServer.setTimeout(30 * 1000);
 
     // Create Hooks table
     helper.Hook = await load('Hook', loadOptions);
