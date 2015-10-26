@@ -5,7 +5,7 @@ suite('API', function() {
   var debug       = require('debug')('test:api:createhook');
   var helper      = require('./helper');
 
-  if (!helper.setupApi()) {
+  if (!helper.setup()) {
     this.pending = true;
   }
 

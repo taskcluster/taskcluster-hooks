@@ -36,11 +36,11 @@ helper.loadOptions = {profile: 'test', process: 'test-helper'};
 helper.hasTcCredentials = cfg.taskcluster.credentials.accessToken;
 
 
-// Call this in suites or tests that make API calls; it will set up
+// Call this in suites or tests that make API calls, hooks etc; it will set up
 // what's required to respond to those calls.  But note that this
 // requires credentials (taskcluster-hooks.conf.json); returns false
 // if those credentials are not available.
-helper.setupApi = function() {
+helper.setup = function() {
   if (!helper.hasTcCredentials) {
     return false;
   }
