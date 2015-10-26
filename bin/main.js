@@ -7,6 +7,7 @@ var Promise     = require('promise');
 var taskcreator = require('../hooks/taskcreator');
 var v1          = require('../routes/v1');
 var _           = require('lodash');
+var Scheduler   = require('../hooks/scheduler');
 // These will exist in taskcluster-base, when we move to the next version.
 var config      = require('typed-env-config');
 var loader      = require('taskcluster-lib-loader');
@@ -81,7 +82,7 @@ var load = loader({
     },
   },
 
-  scheduler: {
+  schedulerNoStart: {
     requires: ['cfg', 'Hook', 'taskcreator'],
     setup: ({cfg, Hook, taskcreator}) => {
       return new Scheduler({
@@ -90,6 +91,11 @@ var load = loader({
         pollingDelay: cfg.app.scheduler.pollingDelay
       });
     },
+  },
+
+  scheduler: {
+    requires: ['schedulerNoStart'],
+    setup: ({schedulerNoStart}) => schedulerNoStart.start(),
   },
 
 }, ['profile', 'process']);

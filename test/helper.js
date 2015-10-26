@@ -7,7 +7,6 @@ var load        = require('../bin/main');
 var config      = require('typed-env-config');
 var _           = require('lodash');
 
-var loadOptions = {profile: 'test', process: 'test-helper'};
 var cfg = config({profile: 'test'});
 
 
@@ -29,6 +28,10 @@ var defaultClients = [
 ];
 
 var helper = module.exports = {};
+
+helper.load = load;
+helper.loadOptions = {profile: 'test', process: 'test-helper'};
+
 
 helper.hasTcCredentials = cfg.taskcluster.credentials.accessToken;
 
@@ -59,7 +62,7 @@ helper.setupApi = function() {
     authServer.setTimeout(30 * 1000);
 
     // Create Hooks table
-    helper.Hook = await load('Hook', loadOptions);
+    helper.Hook = await load('Hook', helper.loadOptions);
 
     // Remove all entities before each test
     await helper.Hook.scan({}, {handler: hook => hook.remove()});
@@ -68,7 +71,7 @@ helper.setupApi = function() {
     webServer = await load('server', _.defaults({
       Hook: helper.Hook,
       taskcreator: helper.creator,
-    }, loadOptions));
+    }, helper.loadOptions));
 
     // Create client for working with API
     helper.baseUrl = 'http://localhost:' + webServer.address().port + '/v1';
