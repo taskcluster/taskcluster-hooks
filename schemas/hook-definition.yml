@@ -1,0 +1,26 @@
+$schema:                  http://json-schema.org/draft-04/schema#
+title:                    "Hook definition"
+description: |
+  Definition of a hook that will create tasks when defined events occur.
+type:                     object
+properties:
+  hookGroupId:
+    type:                 string
+    maxLength:            255
+  hookId:
+    type:                 string
+    maxLength:            255
+  metadata:               {$const: metadata}
+  schedule:               {$ref: "http://schemas.taskcluster.net/hooks/v1/schedule.json"}
+  expires:                {$const: expires}
+  deadline:               {$const: deadline}
+  task:                   {$ref: "http://schemas.taskcluster.net/queue/v1/create-task-request.json"}
+additionalProperties:     false
+required:
+  - hookGroupId
+  - hookId
+  - metadata
+  - task
+  - schedule
+  - expires
+  - deadline
