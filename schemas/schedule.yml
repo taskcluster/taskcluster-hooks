@@ -5,6 +5,8 @@ description: |
     If several patterns are specified, tasks will be created at any time
     specified by one or more patterns.
 type: array
+minItems: 6
+maxItems: 6
 items:
   title: "Cron Pattern"
   type: string
