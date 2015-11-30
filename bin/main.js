@@ -65,10 +65,10 @@ var load = loader({
   },
 
   router: {
-    requires: ['cfg', 'validator', 'Hook', 'taskcreator', 'ses'],
-    setup: ({cfg, validator, Hook, taskcreator, ses}) => {
+    requires: ['cfg', 'validator', 'Hook', 'taskcreator'],
+    setup: ({cfg, validator, Hook, taskcreator}) => {
       return v1.setup({
-        context: {Hook, taskcreator, ses},
+        context: {Hook, taskcreator},
         validator,
         authBaseUrl:      cfg.taskcluster.authBaseUrl,
         publish:          cfg.app.publishMetaData,
