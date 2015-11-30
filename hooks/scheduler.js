@@ -97,7 +97,11 @@ class Scheduler extends events.EventEmitter {
       await this.taskcreator.fire(hook, {}, {
         taskId: hook.nextTaskId,
         // use the next scheduled date as task.created, to ensure idempotency
-        created: hook.nextScheduledDate
+        created: hook.nextScheduledDate,
+        // don't retry, as a 5xx error will cause a retry on the next scheduler
+        // polling interval, and we do not want to get behind waiting for each
+        // createTask operation to time out
+        retry: false
       });
     } catch(err) {
       console.log("Failed to handle hook: %s/%s" +
