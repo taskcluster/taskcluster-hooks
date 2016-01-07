@@ -66,6 +66,7 @@ suite('Scheduler', function() {
         deadline:           '1 day',
         expires:            '1 day',
         schedule:           ["0 0 0 * * *"],
+        lastFire:           {},
         triggerToken:       taskcluster.slugid(),
       };
 
@@ -123,6 +124,7 @@ suite('Scheduler', function() {
         expires:            '1 day',
         schedule:           ["0 0 0 * * *"],
         triggerToken:       taskcluster.slugid(),
+        lastFire:           {},
         nextTaskId:         taskcluster.slugid(),
         nextScheduledDate:  new Date(3000, 0, 0, 0, 0, 0, 0),
       });

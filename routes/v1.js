@@ -189,6 +189,7 @@ api.declare({
       _.defaults({}, hookDef, {
         bindings:           [], // TODO
         triggerToken:       taskcluster.slugid(),
+        lastFire:           {},
         nextTaskId:         taskcluster.slugid(),
         nextScheduledDate:  nextDate(hookDef.schedule)
       }));
