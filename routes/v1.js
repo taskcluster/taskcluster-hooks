@@ -135,17 +135,15 @@ api.declare({
     });
   }
 
+  let reply = {lastFire: hook.lastFire}
+
   // Return a schedule only if a schedule is defined
-  let reply = {};
   if (hook.schedule.length > 0) {
     reply.nextScheduledDate = hook.nextScheduledDate.toJSON();
     // Remark: nextTaskId cannot be exposed here, it's a secret.
     // If someone could predict the taskId they could use it, breaking this
     // service at best, at worst maybe exploit it to elevate from defineTask
     // to createTask without scope to schedule a task.
-  }
-  if (hook.lastFire.time) {
-    reply.lastFire = hook.lastFire;
   }
   return res.reply(reply);
 });
@@ -230,7 +228,7 @@ api.declare({
       _.defaults({}, hookDef, {
         bindings:           [], // TODO
         triggerToken:       taskcluster.slugid(),
-        lastFire:           {},
+        lastFire:           {result: 'no-fire'},
         nextTaskId:         taskcluster.slugid(),
         nextScheduledDate:  nextDate(hookDef.schedule)
       }));

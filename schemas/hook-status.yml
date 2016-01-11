@@ -14,6 +14,10 @@ properties:
         description: "Information about a successful firing of the hook"
         type: object
         properties:
+          result:
+            type: string
+            enum:
+              - success
           taskId:
             description: The task created
             type: string
@@ -25,12 +29,17 @@ properties:
             format: date-time
         additionalProperties: false
         required:
+          - result
           - taskId
           - time
       - title: Failed Fire
         description: "Information about an unsuccesful firing of the hook"
         type: object
         properties:
+          result:
+            type: string
+            enum:
+              - error
           error:
             description: |
               The error that occurred when firing the task.  This is typically,
@@ -43,8 +52,20 @@ properties:
             format: date-time
         additionalProperties: false
         required:
+          - result
           - error
           - time
+      - title: No Fire
+        description: "Information about no firing of the hook (e.g., a new hook)"
+        type: object
+        properties:
+          result:
+            type: string
+            enum:
+                - no-fire
+        additionalProperties: false
+        required:
+          - result
   nextScheduledDate:
     description: |
       The next time this hook's task is scheduled to be created. This property
@@ -53,3 +74,5 @@ properties:
     type: string
     format: date-time
 additionalProperties: false
+required:
+  - lastFire

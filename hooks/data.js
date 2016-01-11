@@ -92,7 +92,7 @@ var Hook = base.Entity.configure({
     nextScheduledDate:  base.Entity.types.Date,
   },
   migrate: function(item) {
-    item.lastFire = {};
+    item.lastFire = {result: 'no-fire'};
     return item;
   }
 });

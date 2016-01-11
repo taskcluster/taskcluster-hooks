@@ -107,6 +107,7 @@ class Scheduler extends events.EventEmitter {
       });
 
       lastFire = {
+        result: 'success',
         taskId: hook.nextTaskId,
         time: new Date(),
       };
@@ -123,6 +124,7 @@ class Scheduler extends events.EventEmitter {
       // waste of time, so consider the hook fired (and failed)
       await this.sendFailureEmail(hook, err);
       lastFire = {
+        result: 'error',
         error: err,
         time: new Date(),
       };

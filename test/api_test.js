@@ -184,10 +184,10 @@ suite('API', function() {
   });
 
   suite("getHookStatus", function() {
-    test("returns {} for a non-scheduled, non-fired task", async () => {
+    test("returns 'no-fire' for a non-scheduled, non-fired task", async () => {
       await helper.hooks.createHook('foo', 'bar', hookDef);
       var r1 = await helper.hooks.getHookStatus('foo', 'bar');
-      assume(r1).deep.equals({});
+      assume(r1).deep.equals({lastFire: {result: 'no-fire'}});
     });
 
     test("returns the next date for a scheduled task", async () => {
@@ -199,9 +199,10 @@ suite('API', function() {
     test("returns the last run status for a hook that has fired", async () => {
       await helper.hooks.createHook('foo', 'bar', dailyHookDef);
       let now = new Date();
-      await setHookLastFire('foo', 'bar', {taskId: 'E5SBRfo-RfOIxh0V4187Qg', time: now});
+      await setHookLastFire('foo', 'bar', {result: 'success', taskId: 'E5SBRfo-RfOIxh0V4187Qg', time: now});
       var r1 = await helper.hooks.getHookStatus('foo', 'bar');
       assume(r1).contains('lastFire');
+      assume(r1.lastFire.result).is.equal('success');
       assume(r1.lastFire.taskId).is.equal('E5SBRfo-RfOIxh0V4187Qg');
       assume(r1.lastFire.time).is.equal(now.toJSON());
     });
