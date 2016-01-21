@@ -12,7 +12,7 @@ var AWS         = require('aws-sdk-promise');
 // These will exist in taskcluster-base, when we move to the next version.
 var config      = require('typed-env-config');
 var loader      = require('taskcluster-lib-loader');
-var tc_lib_app  = require('taskcluster-lib-app');
+var app         = require('taskcluster-lib-app');
 
 // Create component loader
 var load = loader({
@@ -89,9 +89,9 @@ var load = loader({
   server: {
     requires: ['cfg', 'router'],
     setup: ({cfg, router}) => {
-      let app = tc_lib_app(cfg.server);
-      app.use('/v1', router);
-      return app.createServer();
+      let hooksApp = app(cfg.server);
+      hooksApp.use('/v1', router);
+      return hooksApp.createServer();
     },
   },
 
