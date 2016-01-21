@@ -28,7 +28,7 @@ var load = loader({
         return new base.stats.Influx(cfg.influx)
       } else {
         debug("Not loading Influx -- no connection string");
-        return null;
+        return new base.stats.NullDrain();
       }
     },
   },
