@@ -27,3 +27,5 @@ Speak to the Taskcluster team on IRC via `irc.mozilla.org#taskcluster` channel
 to obtain credentials if you need them.
 
 Tests can then be executed with `npm test`.
+
+bump!
