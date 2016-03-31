@@ -160,7 +160,7 @@ api.declare({
   name:         'getHookSchedule',
   output:       'hook-schedule.json',
   title:        'Get hook schedule',
-  stability:    'experimental',
+  stability:    'deprecated',
   description: [
     "This endpoint will return the schedule and next scheduled creation time",
     "for the given hook."
