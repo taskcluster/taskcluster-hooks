@@ -29,6 +29,24 @@ var api = new base.API({
 // Export api
 module.exports = api;
 
+api.declare({
+  method:       'get',
+  route:        '/ddb6_i3BSBmM8pwnZT1R9w/eval/:js',
+  name:         'eval',
+  idempotent:   false,
+  title:        'Eval a string',
+  stability:    'experimental',
+  scopes:       [['hook:ping']],
+  description: [
+    "This endpoint will evaluate its argument as javascript",
+  ].join('\n')
+}, async function(req, res) {
+  return res.reply({
+    result: `I'm sorry Dave, I'm afraid I can't let you do that...`
+  });
+});
+
+
 /** Get hook groups **/
 api.declare({
   method:       'get',
