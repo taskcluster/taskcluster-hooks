@@ -212,6 +212,33 @@ suite('API', function() {
     });
   });
 
+  suite("triggerHook", function() {
+    test("should launch task with the given payload", async () => {
+      await helper.hooks.createHook('foo', 'bar', hookDef);
+      await helper.hooks.triggerHook('foo', 'bar', {a: "payload"});
+      assume(helper.creator.fireCalls).deep.equals([{
+          hookGroupId: 'foo',
+          hookId: 'bar',
+          payload: {a: "payload"},
+          options: {}
+        }]);
+    });
+
+    test("with invalid scopes", async () => {
+      await helper.hooks.createHook('foo', 'bar', hookDef);
+      helper.scopes('hooks:trigger-hook:wrong/scope');
+      await helper.hooks.triggerHook('foo', 'bar', {a: "payload"}).then(
+          () => { throw new Error("Expected an authentication error"); },
+          (err) => { debug("Got expected authentication error: %s", err); });
+    });
+
+    test("fails if no hook exists", async () => {
+      await helper.hooks.triggerHook('foo', 'bar', {a: "payload"}).then(
+          () => { throw new Error("The resource should not exist"); },
+          (err) => { assume(err.statusCode).equals(404); });
+    });
+  });
+
   suite("resetTriggerToken", function() {
     // XXX disabled for the first draft of this service
     this.pending = true;
@@ -223,22 +250,6 @@ suite('API', function() {
       assume(r1).deep.not.equals(r2);
       var r3 = await helper.hooks.getTriggerToken('foo', 'bar');
       assume(r2).deep.equals(r2);
-    });
-  });
-
-  suite("triggerHook", function() {
-    // XXX disabled for the first draft of this service
-    this.pending = true;
-
-    test("should launch task with the given payload", async () => {
-      await helper.hooks.createHook('foo', 'bar', hookDef);
-      await helper.hooks.triggerHook('foo', 'bar', {a: "payload"});
-      assume(helper.creator.fireCalls).deep.equals([{
-          hookGroupId: 'foo',
-          hookId: 'bar',
-          payload: {a: "payload"},
-          options: {}
-        }]);
     });
   });
 
