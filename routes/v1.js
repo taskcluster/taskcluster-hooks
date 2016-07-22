@@ -351,23 +351,41 @@ api.declare({
   ].join('\n')
 }, async function(req, res) {
   var hookGroupId = req.params.hookGroupId;
-  var hookId    = req.params.hookId;
+  var hookId      = req.params.hookId;
   if (!req.satisfies({hookGroupId, hookId})) {
     return;
   }
 
+  var lastFire;
+  var resp;
   var payload = req.body;
-
   var hook = await this.Hook.load({hookGroupId, hookId}, true);
 
-  // Return a 404 if the hook entity doesn't exist
   if (!hook) {
     return res.status(404).json({
       message: "Hook not found"
     });
   }
 
-  let resp = await this.taskcreator.fire(hook, payload);
+  try {
+    resp = await this.taskcreator.fire(hook, payload);
+    lastFire = {
+      result: 'success',
+      taskId: resp.status.taskId,
+      time: new Date(),
+    };
+  } catch(err) {
+    lastFire = {
+      result: 'error',
+      error: err,
+      time: new Date(),
+    };
+  }
+
+  await hook.modify((hook) => {
+    hook.lastFire = lastFire;
+  });
+
   return res.reply(resp);
 });
 
