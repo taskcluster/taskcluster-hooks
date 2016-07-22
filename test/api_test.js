@@ -205,6 +205,14 @@ suite('API', function() {
       assume(r1.lastFire.time).is.equal(now.toJSON());
     });
 
+    test("returns the last run status for triggerHook", async() => {
+      await helper.hooks.createHook('foo', 'bar', hookDef);
+      await helper.hooks.triggerHook('foo', 'bar', {a: "payload"});
+      var r1 = await helper.hooks.getHookStatus('foo', 'bar');
+      assume(r1).contains('lastFire');
+      assume(r1.lastFire.result).is.equal('success');
+    });
+
     test("fails if no hook exists", async () => {
       await helper.hooks.getHookStatus('foo', 'bar').then(
           () => { throw new Error("The resource should not exist"); },
