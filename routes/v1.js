@@ -412,10 +412,8 @@ api.declare({
   if (resp) {
     return res.reply(resp);
   } else {
-    return res.reply({
-      result: "error",
-      error: err.toString(),
-      time: new Date()
+    return res.status(400).json({
+      error: "could not create task: " + err.toString()
     });
   }
 });
