@@ -408,7 +408,16 @@ api.declare({
     hook.lastFire = lastFire;
   });
 
-  return res.reply(resp);
+
+  if (resp) {
+    return res.reply(resp);
+  } else {
+    return res.reply({
+      result: "error",
+      error: err.toString(),
+      time: new Date()
+    });
+  }
 });
 
 /** Get secret token for a trigger **/
