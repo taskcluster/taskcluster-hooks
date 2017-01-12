@@ -3,7 +3,7 @@ defaults:
   app:
     component:        hooks
     hookTable:        !env HOOK_TABLE_NAME
-    publishMetaData:  !env:flag PUBLISH_METADATA
+    publishMetaData:  false
     scheduler:
       pollingDelay:   60000
   influx:
