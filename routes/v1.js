@@ -402,20 +402,16 @@ api.declare({
       error: err,
       time: new Date(),
     };
+    return res.status(400).json({
+      error: "could not create task: " + err.toString()
+    });
   }
 
   await hook.modify((hook) => {
     hook.lastFire = lastFire;
   });
 
-
-  if (resp) {
-    return res.reply(resp);
-  } else {
-    return res.status(400).json({
-      error: "could not create task: " + err.toString()
-    });
-  }
+  return res.reply(resp);
 });
 
 /** Get secret token for a trigger **/
