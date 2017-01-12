@@ -71,6 +71,7 @@ helper.setup = function() {
     await helper.Hook.scan({}, {handler: hook => hook.remove()});
 
     // reset the list of fired tasks
+    helper.creator.shouldFail = false;
     helper.creator.fireCalls = [];
 
     // Setup client with all scopes
