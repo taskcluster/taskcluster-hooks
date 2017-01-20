@@ -2,10 +2,10 @@ suite('Scheduler', function() {
   var _                 = require('lodash');
   var assert            = require('assert');
   var assume            = require('assume');
-  var Scheduler         = require('../src/scheduler');
+  var Scheduler         = require('../lib/scheduler');
   var debug             = require('debug')('test:test_schedule_hooks');
   var helper            = require('./helper');
-  var taskcreator       = require('../src/taskcreator');
+  var taskcreator       = require('../lib/taskcreator');
   var taskcluster       = require('taskcluster-client');
 
   this.slow(500);
