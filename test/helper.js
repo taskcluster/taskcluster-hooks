@@ -1,9 +1,9 @@
-var data        = require('../hooks/data');
+var data        = require('../src/data');
 var taskcluster = require('taskcluster-client');
-var taskcreator = require('../hooks/taskcreator');
+var taskcreator = require('../src/taskcreator');
 var testing     = require('taskcluster-lib-testing');
-var v1          = require('../routes/v1');
-var load        = require('../bin/main');
+var v1          = require('../src/v1');
+var load        = require('../src/main');
 var config      = require('typed-env-config');
 var _           = require('lodash');
 

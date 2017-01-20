@@ -1,2 +1,2 @@
-web:        babel-node bin/main.js server
-scheduler:  babel-node bin/main.js scheduler
+web:        babel-node src/main.js server
+scheduler:  babel-node src/main.js scheduler
