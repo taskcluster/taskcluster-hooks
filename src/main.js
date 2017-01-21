@@ -4,7 +4,6 @@ var debug       = require('debug')('hooks:bin:server');
 var path        = require('path');
 var Promise     = require('promise');
 var taskcreator = require('./taskcreator');
-var raven       = require('raven');
 var validator   = require('taskcluster-lib-validate');
 var stats       = require('taskcluster-lib-stats');
 var v1          = require('./v1');
@@ -14,6 +13,7 @@ var AWS         = require('aws-sdk');
 var config      = require('typed-env-config');
 var loader      = require('taskcluster-lib-loader');
 var app         = require('taskcluster-lib-app');
+var monitor     = require('taskcluster-lib-monitor');
 
 // Create component loader
 var load = loader({
@@ -34,14 +34,14 @@ var load = loader({
     },
   },
 
-  raven: {
-    requires: ['cfg'],
-    setup: ({cfg}) => {
-      if (cfg.raven.sentryDSN) {
-        return new raven.Client(cfg.raven.sentryDSN);
-      }
-      return null;
-    },
+  monitor: {
+    requires: ['process', 'profile', 'cfg'],
+    setup: ({process, profile, cfg}) => monitor({
+      project: 'taskcluster-hooks',
+      credentials: cfg.taskcluster.credentials,
+      mock: profile !== 'production',
+      process,
+    }),
   },
 
   Hook: {
@@ -77,8 +77,8 @@ var load = loader({
   },
 
   router: {
-    requires: ['cfg', 'validator', 'Hook', 'taskcreator', 'raven'],
-    setup: ({cfg, validator, Hook, taskcreator, raven}) => {
+    requires: ['cfg', 'validator', 'Hook', 'taskcreator', 'monitor'],
+    setup: ({cfg, validator, Hook, taskcreator, monitor}) => {
       return v1.setup({
         context: {Hook, taskcreator},
         validator,
@@ -87,7 +87,7 @@ var load = loader({
         baseUrl:          cfg.server.publicUrl + '/v1',
         referencePrefix:  'hooks/v1/api.json',
         aws:              cfg.aws.validator,
-        raven:            raven,
+        monitor,
       });
     },
   },
