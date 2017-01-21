@@ -26,9 +26,9 @@ var load = loader({
     requires: ['cfg'],
     setup: ({cfg}) => {
       if (cfg.influx && cfg.influx.connectionString) {
-        return new stats.Influx(cfg.influx)
+        return new stats.Influx(cfg.influx);
       } else {
-        debug("Not loading Influx -- no connection string");
+        debug('Not loading Influx -- no connection string');
         return new stats.NullDrain();
       }
     },
@@ -41,7 +41,7 @@ var load = loader({
         return new raven.Client(cfg.raven.sentryDSN);
       }
       return null;
-    }
+    },
   },
 
   Hook: {
@@ -63,7 +63,7 @@ var load = loader({
         prefix:  'hooks/v1/',
         aws:     cfg.aws.validator,
       });
-    }
+    },
   },
 
   taskcreator: {
@@ -108,7 +108,7 @@ var load = loader({
         Hook,
         taskcreator,
         ses,
-        pollingDelay: cfg.app.scheduler.pollingDelay
+        pollingDelay: cfg.app.scheduler.pollingDelay,
       });
     },
   },

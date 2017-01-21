@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "compile": "babel-compile -p taskcluster src:lib test:.test",
-    "test": "mocha .test/*_test.js",
+    "test": "mocha .test/lint.js .test/*_test.js",
     "pretest": "npm run compile",
     "install": "npm run compile"
   },
@@ -22,7 +22,10 @@
     "babel-preset-taskcluster": "^3.0.0",
     "cron-parser": "^1.0.1",
     "debug": "^2.2.0",
+    "eslint-config-taskcluster": "^2.0.0",
+    "eslint-plugin-taskcluster": "^1.0.2",
     "lodash": "^3.10.1",
+    "mocha-eslint": "^3.0.1",
     "promise": "^7.0.4",
     "raven": "^0.10.0",
     "taskcluster-client": "^1.6.3",

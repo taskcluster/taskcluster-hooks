@@ -9,7 +9,6 @@ var _           = require('lodash');
 
 var cfg = config({profile: 'test'});
 
-
 var helper = module.exports = {};
 
 helper.load = load;
@@ -37,7 +36,7 @@ helper.setup = function() {
     await helper.Hook.ensureTable();
     await helper.Hook.scan({}, {handler: hook => hook.remove()});
 
-    helper.creator = new taskcreator.MockTaskCreator()
+    helper.creator = new taskcreator.MockTaskCreator();
     webServer = await load('server', _.defaults({
       Hook: helper.Hook,
       taskcreator: helper.creator,
@@ -56,10 +55,10 @@ helper.setup = function() {
         baseUrl:          helper.baseUrl,
         credentials: {
           clientId:       'test-client',
-          accessToken:    'none'
+          accessToken:    'none',
         },
         //authBaseUrl: cfg.get('taskcluster:authBaseUrl'),
-        authorizedScopes: (scopes.length > 0 ? scopes : undefined)
+        authorizedScopes: scopes.length > 0 ? scopes : undefined,
       });
     };
   });
