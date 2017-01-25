@@ -3,7 +3,7 @@ env:
   - DEBUG='* -superagent -express:* -mocha:* -babel'
 language: node_js
 node_js:
-- 6
+- 7.4.0
 services:
 - rabbitmq
 script: npm test

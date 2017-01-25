@@ -41,6 +41,6 @@
     "taskcluster-lib-testing": "^1.0.3"
   },
   "engines": {
-    "node": "6.4.0"
+    "node": "7.4.0"
   }
 }
