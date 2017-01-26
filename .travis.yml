@@ -7,7 +7,7 @@ addons:
 env:
   global:
   - CXX=g++-4.8
-  - DEBUG='* -superagent -express:* -mocha:* -babel'
+  - DEBUG='* -superagent -express:* -mocha:* -babel -eslint*'
 language: node_js
 node_js:
 - 7.4.0
