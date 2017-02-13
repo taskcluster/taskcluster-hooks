@@ -164,38 +164,27 @@ class Scheduler extends events.EventEmitter {
 
     var utf8 = s => unescape(encodeURIComponent(s));
 
-    await this.ses.sendEmail({
-      Destination: {
-        ToAddresses: [email],
-      },
-      Message: {
-        Subject: {
-          Data: utf8(`[Taskcluster Hooks] Scheduled Hook failure: ${hook.hookGroupId}/${hook.hookId}`),
-          Charset: 'UTF-8',
-        },
-        Body: {
-          Text: {
-            Data: utf8(`The hooks service was unable to create a task for hook ${hook.hookGroupId}/${hook.hookId},
-for which you are listed as owner.
+    this.notify.email({
+      address: email,
+      subject: utf8(`[Taskcluster Hooks] Scheduled Hook failure: ${hook.hookGroupId}/${hook.hookId}`),
+      content: utf8(`The hooks service was unable to create a task for hook ${hook.hookGroupId}/${hook.hookId},
+  for which you are listed as owner.
 
-The error was:
-  ${err}
+  The error was:
+    ${err}
 
-Details:
+  Details:
 
-${errJson}
+    ${errJson}
 
-The service will try again to create the task on the next iteration.
+  The service will try again to create the task on the next iteration.
 
-Thanks,
-TaskCluster Automation
+  Thanks,
+  TaskCluster Automation
 
-P.S. If you believe you have received this email in error, please hit reply to let us know.`),
-            Charset: 'UTF-8',
-          },
-        },
-      },
-    }).promise();
+  P.S. If you believe you have received this email in error, please hit reply to let us know.`),
+
+    });
   }
 }
 
