@@ -7,6 +7,7 @@ var Promise     = require('promise');
 var taskcluster = require('taskcluster-client');
 var nextDate    = require('./nextdate');
 var taskcreator = require('./taskcreator');
+var _ = require('lodash');
 
 /**
  * The Scheduler will periodically check for tasks in azure storage that are
@@ -153,7 +154,6 @@ class Scheduler extends events.EventEmitter {
     if (!hook.metadata.emailOnError) {
       return;
     }
-    var email = hook.metadata.owner;
 
     var errJson;
     try {
@@ -162,8 +162,14 @@ class Scheduler extends events.EventEmitter {
       errJson = `(error formatting JSON: ${e})`;
     }
 
-    this.notify.email({
-      address: email,
+    let email = this.createEmail(hook, err, errJson);
+    this.notify.email(email);
+    this.notify.lastEmail = _.merge({}, email, {err, errJson});
+  }
+
+  createEmail(hook, err, errJson) {
+    return {
+      address: hook.metadata.owner,
       subject: `[Taskcluster Hooks] Scheduled Hook failure: ${hook.hookGroupId}/${hook.hookId}`,
       content: `The hooks service was unable to create a task for hook ${hook.hookGroupId}/${hook.hookId},
   for which you are listed as owner.
@@ -182,7 +188,7 @@ class Scheduler extends events.EventEmitter {
 
   P.S. If you believe you have received this email in error, please hit reply to let us know.`,
 
-    });
+    };
   }
 }
 

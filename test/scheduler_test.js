@@ -186,10 +186,16 @@ suite('Scheduler', function() {
 
       creator.shouldFail = true;
 
+      await scheduler.handleHook(hook);
       assume(scheduler.notify.credentials).exists();
       assume(scheduler.notify.authorizedScopes).exists();
-      assume(scheduler.notify.email).exists();
-      await scheduler.handleHook(hook);
+      assume(scheduler.notify.lastEmail).exists();
+      
+      let lastEmail = scheduler.notify.lastEmail;
+      let email = scheduler.createEmail(scheduler.Hook, lastEmail.err, lastEmail.errJson);
+      assume(lastEmail.address).is.equal(email.address);
+      assume(lastEmail.subject).is.equal(email.subject);
+      assume(lastEmail.content).is.equal(email.content);
     });
   });
 });
