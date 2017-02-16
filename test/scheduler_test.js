@@ -19,6 +19,7 @@ suite('Scheduler', function() {
       Hook: helper.Hook,
       taskcreator: creator,
       pollingDelay: 1,
+      notify: helper.notify,
     });
   });
 
@@ -177,6 +178,18 @@ suite('Scheduler', function() {
       assume(updatedHook.lastFire.error.statusCode).is.equal(499);
       assume(new Date(updatedHook.lastFire.time) - new Date()).is.approximately(0, 2000); // 2s slop
       assume(updatedHook.nextScheduledDate).is.not.equal(oldScheduledDate);
+    });
+
+    test('on error, notify is used with correct options', async () => {
+      let oldTaskId = hook.nextTaskId;
+      let oldScheduledDate = hook.nextScheduledDate;
+
+      creator.shouldFail = true;
+
+      assume(scheduler.notify.credentials).exists();
+      assume(scheduler.notify.authorizedScopes).exists();
+      assume(scheduler.notify.email).exists();
+      await scheduler.handleHook(hook);
     });
   });
 });

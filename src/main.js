@@ -64,7 +64,7 @@ var load = loader({
     requires: ['cfg'],
     setup: ({cfg}) => new taskcluster.Notify({
       credentials: cfg.taskcluster.credentials,
-      authorizedScopes: ['queue:route:notify.email.*.on-failed'],
+      authorizedScopes: ['queue:route:notify.email.*'],
     }),
   },
 
