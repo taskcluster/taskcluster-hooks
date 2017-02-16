@@ -15,11 +15,12 @@ suite('Scheduler', function() {
   var creator = null;
   setup(async () => {
     creator = new taskcreator.MockTaskCreator();
+    let notify = require('./fake-notify');
     scheduler = new Scheduler({
       Hook: helper.Hook,
       taskcreator: creator,
       pollingDelay: 1,
-      notify: helper.notify,
+      notify: notify,
     });
   });
 
@@ -104,7 +105,9 @@ suite('Scheduler', function() {
       hook = await scheduler.Hook.create({
         hookGroupId:        'tests',
         hookId:             'test',
-        metadata:           {},
+        metadata:           {
+          owner: 'example@example.com',
+        },
         task:               {
           provisionerId: 'no-provisioner',
           workerType: 'test-worker',
@@ -192,7 +195,7 @@ suite('Scheduler', function() {
       assume(scheduler.notify.lastEmail).exists();
       
       let lastEmail = scheduler.notify.lastEmail;
-      let email = scheduler.createEmail(scheduler.Hook, lastEmail.err, lastEmail.errJson);
+      let email = scheduler.createEmail(hook, lastEmail.err, lastEmail.errJson);
       assume(lastEmail.address).is.equal(email.address);
       assume(lastEmail.subject).is.equal(email.subject);
       assume(lastEmail.content).is.equal(email.content);

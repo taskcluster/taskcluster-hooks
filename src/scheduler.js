@@ -7,7 +7,7 @@ var Promise     = require('promise');
 var taskcluster = require('taskcluster-client');
 var nextDate    = require('./nextdate');
 var taskcreator = require('./taskcreator');
-var _ = require('lodash');
+var _           = require('lodash');
 
 /**
  * The Scheduler will periodically check for tasks in azure storage that are
