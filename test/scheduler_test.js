@@ -187,17 +187,25 @@ suite('Scheduler', function() {
       creator.shouldFail = true;
       hook.metadata.emailOnError = true;
       await scheduler.handleHook(hook);
-
-      assume(scheduler.notify.credentials).exists();
-      assume(scheduler.notify.authorizedScopes).exists();
+      
       assume(scheduler.notify.lastEmail).exists();
-      
       let lastEmail = scheduler.notify.lastEmail;
-      let email = scheduler.createEmail(hook, lastEmail.err, lastEmail.errJson);
-      
+      let email = scheduler.createEmail(hook, 'error explanation', 'error explanation');
       assume(lastEmail.address).is.equal(email.address);
       assume(lastEmail.subject).is.equal(email.subject);
-      assume(lastEmail.content).is.equal(email.content);
+
+      // validating content of email
+      let phrase = `The hooks service was unable to create a task for hook ${hook.hookGroupId}/${hook.hookId}`;
+      assume(lastEmail.content.search(phrase)).is.not.equal(-1);
+
+      phrase = 'The error was:';
+      assume(lastEmail.content.search(phrase)).is.not.equal(-1);
+
+      phrase = 'Details:';
+      assume(lastEmail.content.search(phrase)).is.not.equal(-1);
+
+      phrase = 'TaskCluster Automation';
+      assume(lastEmail.content.search(phrase)).is.not.equal(-1);
     });
   });
 });
