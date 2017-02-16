@@ -184,18 +184,17 @@ suite('Scheduler', function() {
     });
 
     test('on error, notify is used with correct options', async () => {
-      let oldTaskId = hook.nextTaskId;
-      let oldScheduledDate = hook.nextScheduledDate;
-
       creator.shouldFail = true;
-
+      hook.metadata.emailOnError = true;
       await scheduler.handleHook(hook);
+
       assume(scheduler.notify.credentials).exists();
       assume(scheduler.notify.authorizedScopes).exists();
       assume(scheduler.notify.lastEmail).exists();
       
       let lastEmail = scheduler.notify.lastEmail;
       let email = scheduler.createEmail(hook, lastEmail.err, lastEmail.errJson);
+      
       assume(lastEmail.address).is.equal(email.address);
       assume(lastEmail.subject).is.equal(email.subject);
       assume(lastEmail.content).is.equal(email.content);
