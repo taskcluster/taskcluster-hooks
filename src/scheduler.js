@@ -36,7 +36,7 @@ class Scheduler extends events.EventEmitter {
     // Store options on this for use in event handlers
     this.Hook         = options.Hook;
     this.taskcreator  = options.taskcreator;
-    this.ses          = options.ses;
+    this.notify          = options.notify;
     this.pollingDelay = options.pollingDelay;
 
     // Promise that the polling is done
@@ -162,12 +162,10 @@ class Scheduler extends events.EventEmitter {
       errJson = `(error formatting JSON: ${e})`;
     }
 
-    var utf8 = s => unescape(encodeURIComponent(s));
-
     this.notify.email({
       address: email,
-      subject: utf8(`[Taskcluster Hooks] Scheduled Hook failure: ${hook.hookGroupId}/${hook.hookId}`),
-      content: utf8(`The hooks service was unable to create a task for hook ${hook.hookGroupId}/${hook.hookId},
+      subject: `[Taskcluster Hooks] Scheduled Hook failure: ${hook.hookGroupId}/${hook.hookId}`,
+      content: `The hooks service was unable to create a task for hook ${hook.hookGroupId}/${hook.hookId},
   for which you are listed as owner.
 
   The error was:
@@ -182,7 +180,7 @@ class Scheduler extends events.EventEmitter {
   Thanks,
   TaskCluster Automation
 
-  P.S. If you believe you have received this email in error, please hit reply to let us know.`),
+  P.S. If you believe you have received this email in error, please hit reply to let us know.`,
 
     });
   }

@@ -6,6 +6,7 @@ var v1          = require('../lib/v1');
 var load        = require('../lib/main');
 var config      = require('typed-env-config');
 var _           = require('lodash');
+var fakeNotify = require('./fake-notify');
 
 var cfg = config({profile: 'test'});
 
@@ -31,6 +32,7 @@ helper.setup = function() {
 
     // Create Hooks table
     helper.Hook = await load('Hook', helper.loadOptions);
+    helper.notify = fakeNotify;
 
     // Create table and remove all entities before each test
     await helper.Hook.ensureTable();
