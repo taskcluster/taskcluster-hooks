@@ -19,6 +19,7 @@ before_install:
 - 'if [ "${TRAVIS_PULL_REQUEST}" = "false" ]; then openssl aes-256-cbc -K $encrypted_34d7be19243e_key -iv $encrypted_34d7be19243e_iv -in user-config.yml.enc -out user-config.yml -d; fi'
 
 cache:
+  yarn: true
   directories:
     - node_modules
 
