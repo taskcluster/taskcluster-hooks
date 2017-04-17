@@ -6,6 +6,8 @@ description: |
     more than one pattern is considered only to be counted once, in other words
     it is allowed for the cron patterns to overlap; duplicates are redundant.
 type: array
+minItems: 6
+maxItems: 6
 items:
   title: "Cron Pattern"
   type: string
