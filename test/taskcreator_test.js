@@ -79,8 +79,8 @@ suite('TaskCreator', function() {
   test('fails if task.scopes includes scopes not granted to the role', async function() {
     let hook = await createHook(['project:taskcluster:tests:tc-hooks:scope/not/in/the/role']);
     await creator.fire(hook, {payload: true}).then(
-        () => { throw new Error('Expected an error'); },
-        (err) => { debug('Got expected error: %s', err); });
+      () => { throw new Error('Expected an error'); },
+      (err) => { debug('Got expected error: %s', err); });
   });
 });
 

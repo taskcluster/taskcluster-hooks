@@ -3,10 +3,9 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "compile": "babel-compile -p taskcluster src:lib test:.test",
-    "test": "mocha .test/lint.js .test/*_test.js",
-    "pretest": "npm run compile",
-    "install": "npm run compile"
+    "lint": "eslint src/*.js test/*.js",
+    "test": "mocha test/*_test.js",
+    "pretest": "yarn lint"
   },
   "repository": {
     "type": "git",
@@ -22,10 +21,8 @@
     "babel-preset-taskcluster": "^3.0.0",
     "cron-parser": "^1.0.1",
     "debug": "^2.2.0",
-    "eslint-config-taskcluster": "^2.0.0",
-    "eslint-plugin-taskcluster": "^1.0.2",
+    "eslint-config-taskcluster": "^3.0.0",
     "lodash": "^3.10.1",
-    "mocha-eslint": "^3.0.1",
     "promise": "^7.0.4",
     "taskcluster-client": "^1.6.3",
     "taskcluster-lib-api": "3.2.2",
