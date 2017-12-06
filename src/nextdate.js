@@ -20,7 +20,6 @@ var nextDate = function(schedule, reference) {
       next = n;
     }
   });
-
   return next || FUTURE;
 };
 

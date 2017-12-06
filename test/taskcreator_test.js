@@ -1,9 +1,9 @@
 suite('TaskCreator', function() {
   var assume            = require('assume');
-  var taskcreator       = require('../lib/taskcreator');
+  var taskcreator       = require('../src/taskcreator');
   var debug             = require('debug')('test:test_schedule_hooks');
   var helper            = require('./helper');
-  var data              = require('../lib/data');
+  var data              = require('../src/data');
   var taskcluster       = require('taskcluster-client');
 
   this.slow(500);
@@ -86,7 +86,7 @@ suite('TaskCreator', function() {
 
 suite('MockTaskCreator', function() {
   var assume            = require('assume');
-  var taskcreator       = require('../lib/taskcreator');
+  var taskcreator       = require('../src/taskcreator');
   var debug             = require('debug')('test:test_schedule_hooks');
   var helper            = require('./helper');
   var hookDef           = require('./test_definition');
