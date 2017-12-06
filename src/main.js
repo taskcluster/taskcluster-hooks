@@ -102,7 +102,7 @@ var load = loader({
   server: {
     requires: ['cfg', 'router', 'docs'],
     setup: ({cfg, router, docs}) => {
-      let hooksApp = app(cfg.server);
+      let hooksApp = app({docs,cfg.server});
       hooksApp.use('/v1', router);
       return hooksApp.createServer();
     },
