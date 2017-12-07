@@ -15,9 +15,7 @@ var nextDate = function(schedule, reference) {
       currentDate: reference,
       utc: true,
     });
-    console.log('HERE 2');
     let n = interval.next();
-    console.log('THERE 2');
     if (typeof next === 'undefined' || n < next) {
       next = n;
     }

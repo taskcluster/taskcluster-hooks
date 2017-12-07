@@ -217,7 +217,6 @@ api.declare({
     return;
   }
 
-  console.log('HERE');
   // Validate cron-parser expressions
   _.forEach(hookDef.schedule, function(schedule) {
     try {
@@ -228,11 +227,8 @@ api.declare({
     }
   });
 
-  console.log('THERE');
-
   // Try to create a Hook entity
   try {
-    console.log('HERE 1');
     var hook = await this.Hook.create(
       _.defaults({}, hookDef, {
         bindings:           [], // TODO
@@ -241,10 +237,8 @@ api.declare({
         nextTaskId:         taskcluster.slugid(),
         nextScheduledDate:  nextDate(hookDef.schedule),
       }));
-    console.log('THERE 1');
 
   } catch (err) {
-    console.log(err);
     if (!err || err.code !== 'EntityAlreadyExists') {
       throw err;
     }
