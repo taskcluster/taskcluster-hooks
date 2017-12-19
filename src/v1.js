@@ -238,6 +238,7 @@ api.declare({
         nextScheduledDate:  nextDate(hookDef.schedule),
 
       }));
+
   } catch (err) {
     if (!err || err.code !== 'EntityAlreadyExists') {
       throw err;
