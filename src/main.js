@@ -39,8 +39,6 @@ var load = loader({
       return data.Hook.setup(_.defaults({
         table:        cfg.app.hookTable,
         monitor:      monitor.prefix(cfg.app.hookTable.toLowerCase()),
-        component:    cfg.app.component,
-        process,
       }, cfg.azureTable, cfg.taskcluster));
     },
   },
@@ -70,7 +68,10 @@ var load = loader({
 
   router: {
     requires: ['cfg', 'validator', 'Hook', 'taskcreator', 'monitor'],
-    setup: ({cfg, validator, Hook, taskcreator, monitor}) => {
+    setup: async ({cfg, validator, Hook, taskcreator, monitor}) => {
+
+      await Hook.ensureTable();
+
       return v1.setup({
         context: {Hook, taskcreator},
         validator,
