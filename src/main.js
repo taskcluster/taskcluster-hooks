@@ -108,8 +108,7 @@ var load = loader({
         env:                    cfg.server.env,
         forceSSL:               cfg.server.forceSSL,
         trustProxy:             cfg.server.trustProxy,
-        contentSecurityPolicy:  cfg.server.contentSecurityPolicy,
-        robotstxt:              cfg.server.robotstxt,
+        publicUrl:              cfg.server.publicUrl,
         rootDocsRedirect:       true, 
         docs,
       });
