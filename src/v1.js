@@ -24,6 +24,11 @@ var api = new API({
     'https://www.npmjs.com/package/cron-parser.  For example:',
     ' * `[\'0 0 1 * * *\']` -- daily at 1:00 UTC',
     ' * `[\'0 0 9,21 * * 1-5\', \'0 0 12 * * 0,6\']` -- weekdays at 9:00 and 21:00 UTC, weekends at noon',
+    '',
+    'Hooks can change with json-e context fields when you re-trigger a hook',
+    'You can find a complete description about how json-e works, here:',
+    'https://github.com/taskcluster/json-e',
+    
   ].join('\n'),
   schemaPrefix:  'http://schemas.taskcluster.net/hooks/v1/',
 });
