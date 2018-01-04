@@ -60,6 +60,7 @@ suite('TaskCreator', function() {
       lastFire:           {},
       nextTaskId:         taskcluster.slugid(),
       nextScheduledDate:  new Date(2000, 0, 0, 0, 0, 0, 0),
+      triggerSchema:      {},
     });
   };
 
