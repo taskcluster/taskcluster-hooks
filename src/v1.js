@@ -28,7 +28,7 @@ var api = new API({
     'Hooks can change with json-e context fields when you re-trigger a hook',
     'You can find a complete description about how json-e works, here:',
     'https://github.com/taskcluster/json-e',
-    
+
   ].join('\n'),
   schemaPrefix:  'http://schemas.taskcluster.net/hooks/v1/',
 });
@@ -217,7 +217,7 @@ api.declare({
   var hookDef   = req.body;
 
   hookDef = _.defaults({hookGroupId, hookId}, hookDef);
-
+  
   if (!req.satisfies({hookGroupId, hookId})) {
     return;
   }
