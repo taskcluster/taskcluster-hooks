@@ -29,7 +29,7 @@ suite('TaskCreator', function() {
     creator = await helper.load('taskcreator', helper.loadOptions);
   });
 
-  var createHook = async function(scopes, extra) {
+  var createTestHook = async function(scopes, extra) {
     return await helper.Hook.create({
       hookGroupId:        'tc-hooks-tests',
       hookId:             'tc-test-hook',
@@ -60,47 +60,89 @@ suite('TaskCreator', function() {
       lastFire:           {},
       nextTaskId:         taskcluster.slugid(),
       nextScheduledDate:  new Date(2000, 0, 0, 0, 0, 0, 0),
-      triggerSchema:      {},
+      triggerSchema:      {type: 'object', properties:{location:{type: 'string', default: 'Niskayuna, NY'}, 
+        otherVariable: {type: 'integer', default: '12'}}, additionalProperties: false},
     });
   };
 
   test('firing a real task succeeds', async function() {
-    let hook = await createHook(['project:taskcluster:tests:tc-hooks:scope/required/for/task/1']);
+    let hook = await createTestHook([], {triggeredBy:'', context:'${context}'});
     let taskId = taskcluster.slugid();
-    let resp = await creator.fire(hook, {payload: true}, {taskId});
+    let resp = await creator.fire(hook, {context: true}, {taskId});
     assume(resp.status.taskId).equals(taskId);
     assume(resp.status.workerType).equals(hook.task.workerType);
   });
 
   test('firing a real task with a JSON-e context succeeds', async function() {
-    let hook = await createHook([], {
+    let hook = await createTestHook([], {triggeredBy:'', context:{
       valueFromContext: {$eval: 'someValue + 13'},
-      flattenedDeep: {$flattenDeep: {$eval: 'numbers'}},
+      flattenedDeep: {$flattenDeep: {$eval: 'numbers'}}},
     }); 
     let taskId = taskcluster.slugid();
     let resp = await creator.fire(hook, {
       someValue: 42, 
       numbers: [1, 2, [3, 4], [[5, 6]]],
     }, {taskId});
+    let queue = new taskcluster.Queue({credentials: helper.cfg.taskcluster.credentials});
+    let task = await queue.task(taskId);
+    assume(task.extra).deeply.equals({
+      triggeredBy: 'triggerHook',
+      context: {valueFromContext: 55, flattenedDeep:[1, 2, 3, 4, 5, 6]},
+    });
+  });   
+
+  test('triggerSchema', async function() {
+    let hook = await createTestHook([], {
+      env: {DUSTIN_LOCATION: '${location}'},
+    }); 
+    let taskId = taskcluster.slugid();
+    let resp = await creator.fire(hook, {
+      location: 'belo horizonte',
+    }, {taskId});
+    let queue = new taskcluster.Queue({credentials: helper.cfg.taskcluster.credentials});
+    let task = await queue.task(taskId);
+    assume(task.extra.env).deeply.equals({
+      DUSTIN_LOCATION: 'belo horizonte',
+    });
+  });
+
+  test('context value type do not match type defined in triggerSchema', async function() {
+    let hook = await createTestHook([], {
+      env: {DUSTIN_LOCATION: '${location}'},
+    }); 
+    let taskId = taskcluster.slugid();
+    let resp = await creator.fire(hook, {
+      location: 2,
+    }, {taskId}).then(
+      () => { throw new Error('Expected an error'); },
+      (err) => { debug('Got expected error: %s', err); });
+  });
+
+  test('putting a default value from schema in a context', async function() {
+    let hook = await createTestHook([], {
+      env: {DUSTIN_LOCATION: '${location}'},
+    }); 
+    let taskId = taskcluster.slugid();
+    let resp = await creator.fire(hook, {}, {taskId});
 
     // get the created task to examine its payload
     let queue = new taskcluster.Queue({credentials: helper.cfg.taskcluster.credentials});
     let task = await queue.task(taskId);
     // check that JSON-e was properly expanded
-    assume(task.extra).deeply.equals({
-      valueFromContext: 55,
-      flattenedDeep: [1, 2, 3, 4, 5, 6],
+    assume(task.extra.env).deeply.equals({
+      DUSTIN_LOCATION: 'Niskayuna, NY',
     });
-  });   
+  });
 
   test('adds a taskId if one is not specified', async function() {
-    let hook = await createHook(['project:taskcluster:tests:tc-hooks:scope/required/for/task/1']);
-    let resp = await creator.fire(hook, {payload: true});
+    let hook = await createTestHook(['project:taskcluster:tests:tc-hooks:scope/required/for/task/1'],
+      {triggeredBy:'', context:'${context}'});
+    let resp = await creator.fire(hook, {context: true});
     assume(resp.status.workerType).equals(hook.task.workerType);
   });
 
   test('fails if task.scopes includes scopes not granted to the role', async function() {
-    let hook = await createHook(['project:taskcluster:tests:tc-hooks:scope/not/in/the/role']);
+    let hook = await createTestHook(['project:taskcluster:tests:tc-hooks:scope/not/in/the/role']);
     await creator.fire(hook, {payload: true}).then(
       () => { throw new Error('Expected an error'); },
       (err) => { debug('Got expected error: %s', err); });
