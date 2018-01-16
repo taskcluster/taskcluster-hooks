@@ -9,9 +9,9 @@ suite('API', function() {
 
   // Use the same hook definition for everything
   var hookDef = require('./test_definition');
-  let hookWithTriggerSchema = _.defaults({
-    triggerSchema: {$eval :'location'}, 
-  }, hookDef);
+  let hookWithTriggerSchema = _.defaults({triggerSchema: {type: 'object', properties:{location:{type: 'string', 
+    default: 'Niskayuna, NY'}, otherVariable: {type: 'number', default: '12'}}, 
+  additionalProperties: false}}, hookDef);
   let dailyHookDef = _.defaults({
     schedule: ['0 0 3 * * *'],
   }, hookWithTriggerSchema);
@@ -81,9 +81,9 @@ suite('API', function() {
   suite('updateHook', function() {
     test('updates a hook', async () => {
       var input = require('./test_definition');
-      let inputWithTriggerSchema = _.defaults({
-        triggerSchema: {$eval :'location'}, 
-      }, input);
+      let inputWithTriggerSchema = _.defaults({triggerSchema: {type: 'object', properties:{location:{type: 'string', 
+        default: 'Niskayuna, NY'}, otherVariable: {type: 'integer', default: '12'}}, 
+      additionalProperties: false}}, input);
       var r1 = await helper.hooks.createHook('foo', 'bar', inputWithTriggerSchema);
 
       input.metadata.owner = 'test@test.org';
@@ -233,7 +233,8 @@ suite('API', function() {
 
     test('returns the last run status for triggerHook', async () => {
       await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema);
-      await helper.hooks.triggerHook('foo', 'bar', {a: 'payload'});
+      await helper.hooks.triggerHook('foo', 'bar', {context: {location: 'Belo Horizonte, MG'}, 
+        triggeredBy: 'triggerHook'});
       var r1 = await helper.hooks.getHookStatus('foo', 'bar');
       assume(r1).contains('lastFire');
       assume(r1.lastFire.result).is.equal('success');
@@ -249,13 +250,21 @@ suite('API', function() {
   suite('triggerHook', function() {
     test('should launch task with the given payload', async () => {
       await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema);
-      await helper.hooks.triggerHook('foo', 'bar', {a: 'payload'});
+      await helper.hooks.triggerHook('foo', 'bar', {context: {location: 'Belo Horizonte, MG'}, 
+        triggeredBy: 'triggerHook'});
       assume(helper.creator.fireCalls).deep.equals([{
         hookGroupId: 'foo',
         hookId: 'bar',
-        payload: {a: 'payload'},
+        payload: {context: {location: 'Belo Horizonte, MG'}, triggeredBy: 'triggerHook'},
         options: {},
       }]);
+    });
+
+    test('checking schema validation', async () => {
+      await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema);
+      await helper.hooks.triggerHook('foo', 'bar', {context: {location: 28}, 
+        triggeredBy: 'triggerHook'}).then(() => { throw new Error('Location type should be string'); },
+        (err) => { assume(err.statusCode).equals(400); });
     });
 
     test('fails when creating the task fails', async () => {
@@ -263,7 +272,8 @@ suite('API', function() {
       helper.creator.shouldFail = true; // firing the hook should fail..
       helper.scopes('hooks:trigger-hook:foo/bar');
       try {
-        await helper.hooks.triggerHook('foo', 'bar', {a: 'payload'});
+        await helper.hooks.triggerHook('foo', 'bar', {context: {location: 'Belo Horizonte, MG'}, 
+          triggeredBy: 'triggerHook'});
       } catch (err) {
         assume(err.statusCode).equals(400);
         assume(err.body.message).exists();
@@ -273,7 +283,8 @@ suite('API', function() {
     });
 
     test('fails if no hook exists', async () => {
-      await helper.hooks.triggerHook('foo', 'bar', {a: 'payload'}).then(
+      await helper.hooks.triggerHook('foo', 'bar', {context: {location: 'Belo Horizonte, MG'}, 
+        triggeredBy: 'triggerHook'}).then(
         () => { throw new Error('The resource should not exist'); },
         (err) => { assume(err.statusCode).equals(404); });
     });

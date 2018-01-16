@@ -5,6 +5,7 @@ var taskcluster = require('taskcluster-client');
 var API         = require('taskcluster-lib-api');
 var nextDate    = require('../src/nextdate');
 var _           = require('lodash');
+var Ajv         = require('ajv');
 
 var api = new API({
   title:         'Hooks API Documentation',
@@ -371,10 +372,25 @@ api.declare({
   var payload = req.body;
   var hook = await this.Hook.load({hookGroupId, hookId}, true);
   var error = null;
+  const ajv = new Ajv();
 
   if (!hook) {
     return res.reportError('ResourceNotFound', 'No such hook', {});
   }
+  //Using ajv lib to check if the context respect the triggerSchema
+  var validate = ajv.compile(hook.triggerSchema);
+
+  if (validate && payload) {
+    let valid = validate(payload.context);
+    if (!valid) {
+      return res.reportError('InputError', '{{message}}', {message: validate.errors[0].message});
+    }
+  } 
+  // build the context for the task creation
+  let context = {
+    triggeredBy: 'triggerHook',
+    context: payload,
+  };
 
   try {
     resp = await this.taskcreator.fire(hook, payload);
