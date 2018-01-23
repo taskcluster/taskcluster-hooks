@@ -10,8 +10,7 @@ suite('API', function() {
   // Use the same hook definition for everything
   var hookDef = require('./test_definition');
   let hookWithTriggerSchema = _.defaults({triggerSchema: {type: 'object', properties:{location:{type: 'string', 
-    default: 'Niskayuna, NY'}, otherVariable: {type: 'number', default: '12'}}, 
-  additionalProperties: true}}, hookDef);
+    default: 'Niskayuna, NY'}, otherVariable: {type: 'number', default: '12'}}, additionalProperties: true}}, hookDef);
 
   let dailyHookDef = _.defaults({
     schedule: ['0 0 3 * * *'],
