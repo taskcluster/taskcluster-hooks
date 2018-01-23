@@ -263,8 +263,18 @@ suite('API', function() {
     test('checking schema validation', async () => {
       await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema);
       await helper.hooks.triggerHook('foo', 'bar', {location: 28, 
-        triggeredBy: 'triggerHook'}).then(() => { throw new Error('Location type should be string'); },
-        (err) => { assume(err.statusCode).equals(400); });
+        triggeredBy: 'triggerHook'}).then(() => { throw new Error('Expected an error'); },
+        (err) => { debug('Got expected error: %s', err); });
+    });
+
+    test('checking more than one schema validation error', async () => {
+      await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema);
+      await helper.hooks.triggerHook('foo', 'bar', {
+        location: 28, 
+        otherVariable: 'twelve',
+        triggeredBy: 'triggerHook',
+      }).then(() => { throw new Error('Expected an error'); },
+        (err) => { debug('Got expected error: %s', err); });
     });
 
     test('fails when creating the task fails', async () => {
