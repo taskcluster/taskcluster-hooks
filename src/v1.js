@@ -384,7 +384,7 @@ api.declare({
   };
 
   try {
-    resp = await this.taskcreator.fire(hook, payload);
+    resp = await this.taskcreator.fire(hook, context);
     lastFire = {
       result: 'success',
       taskId: resp.status.taskId,
