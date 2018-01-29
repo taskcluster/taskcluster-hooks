@@ -255,7 +255,7 @@ suite('API', function() {
       assume(helper.creator.fireCalls).deep.equals([{
         hookGroupId: 'foo',
         hookId: 'bar',
-        payload: {firedBy: 'triggerHook', payload: {location: 'Belo Horizonte, MG', foo: 'triggerHook'}},
+        context: {firedBy: 'triggerHook', payload: {location: 'Belo Horizonte, MG', foo: 'triggerHook'}},
         options: {},
       }]);
     });
@@ -318,7 +318,7 @@ suite('API', function() {
       assume(helper.creator.fireCalls).deep.equals([{
         hookGroupId: 'foo',
         hookId: 'bar',
-        payload: {a: 'payload'},
+        context: {a: 'payload'},
         options: {},
       }]);
     });
@@ -362,7 +362,7 @@ suite('API', function() {
       assume(helper.creator.fireCalls).deep.equals([{
         hookGroupId: 'foo',
         hookId: 'bar',
-        payload: payload,
+        context: payload,
         options: {},
       }]);
     });

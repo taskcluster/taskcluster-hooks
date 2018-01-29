@@ -144,7 +144,7 @@ suite('MockTaskCreator', function() {
     hook.hookId = 'h';
     await creator.fire(hook, {p: 1}, {o: 1});
     assume(creator.fireCalls).deep.equals([
-      {hookGroupId: 'g', hookId: 'h', payload: {p: 1}, options: {o: 1}},
+      {hookGroupId: 'g', hookId: 'h', context: {p: 1}, options: {o: 1}},
     ]);
   });
 });
