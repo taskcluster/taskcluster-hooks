@@ -234,7 +234,7 @@ suite('API', function() {
     test('returns the last run status for triggerHook', async () => {
       await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema);
       await helper.hooks.triggerHook('foo', 'bar', {location: 'Belo Horizonte, MG', 
-        triggeredBy: 'triggerHook'});
+        firedBy: 'triggerHook'});
       var r1 = await helper.hooks.getHookStatus('foo', 'bar');
       assume(r1).contains('lastFire');
       assume(r1.lastFire.result).is.equal('success');
@@ -251,11 +251,11 @@ suite('API', function() {
     test('should launch task with the given payload', async () => {
       await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema);
       await helper.hooks.triggerHook('foo', 'bar', {location: 'Belo Horizonte, MG', 
-        triggeredBy: 'triggerHook'});
+        firedBy: 'triggerHook'});
       assume(helper.creator.fireCalls).deep.equals([{
         hookGroupId: 'foo',
         hookId: 'bar',
-        payload: {location: 'Belo Horizonte, MG', triggeredBy: 'triggerHook'},
+        payload: {location: 'Belo Horizonte, MG', firedBy: 'triggerHook'},
         options: {},
       }]);
     });
@@ -263,7 +263,7 @@ suite('API', function() {
     test('checking schema validation', async () => {
       await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema);
       await helper.hooks.triggerHook('foo', 'bar', {location: 28, 
-        triggeredBy: 'triggerHook'}).then(() => { throw new Error('Location type should be string'); },
+        firedBy: 'triggerHook'}).then(() => { throw new Error('Location type should be string'); },
         (err) => { assume(err.statusCode).equals(400); });
     });
 
@@ -273,7 +273,7 @@ suite('API', function() {
       helper.scopes('hooks:trigger-hook:foo/bar');
       try {
         await helper.hooks.triggerHook('foo', 'bar', {context: {location: 'Belo Horizonte, MG'}, 
-          triggeredBy: 'triggerHook'});
+          firedBy: 'triggerHook'});
       } catch (err) {
         assume(err.statusCode).equals(400);
         assume(err.body.message).exists();
@@ -284,7 +284,7 @@ suite('API', function() {
 
     test('fails if no hook exists', async () => {
       await helper.hooks.triggerHook('foo', 'bar', {context: {location: 'Belo Horizonte, MG'}, 
-        triggeredBy: 'triggerHook'}).then(
+        firedBy: 'triggerHook'}).then(
         () => { throw new Error('The resource should not exist'); },
         (err) => { assume(err.statusCode).equals(404); });
     });

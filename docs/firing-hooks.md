@@ -17,7 +17,7 @@ submits it to the Queue service via `Queue.createTask`.
 A hook definition's `task` property is, in fact, a [JSON-e](https://taskcluster.github.io/json-e/) template.
 When a hook is fired, that template is rendered and the result is submitted to `Queue.createTask`.
 
-The context for that rendering is an object with property `triggeredBy`, giving
+The context for that rendering is an object with property `firedBy`, giving
 the action that led to the hook firing. The other properties of the object vary
 depending on this property.
 
@@ -33,7 +33,7 @@ against the hook's `triggerSchema`, and supplied in the JSON-e context as
 
 ```
 {
-    triggeredBy: "triggerHook",
+    firedBy: "triggerHook",
     context: {..}               // API call payload
 }
 ```

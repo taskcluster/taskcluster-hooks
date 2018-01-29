@@ -379,7 +379,7 @@ api.declare({
   } 
   // build the context for the task creation
   let context = {
-    triggeredBy: 'triggerHook',
+    firedBy: 'triggerHook',
     context: payload,
   };
 
