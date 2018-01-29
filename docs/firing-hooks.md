@@ -23,7 +23,13 @@ depending on this property.
 
 ### Scheduled Tasks
 
-Not yet implemented (context is `{}`)
+When a hook is fired at a scheduled time, the JSON-e context is simply:
+
+```
+{
+    firedBy' 'schedule'
+}
+```
 
 ### TriggerHook
 
