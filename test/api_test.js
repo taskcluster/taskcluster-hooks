@@ -9,8 +9,22 @@ suite('API', function() {
 
   // Use the same hook definition for everything
   var hookDef = require('./test_definition');
-  let hookWithTriggerSchema = _.defaults({triggerSchema: {type: 'object', properties:{location:{type: 'string', 
-    default: 'Niskayuna, NY'}, otherVariable: {type: 'number', default: '12'}}, additionalProperties: true}}, hookDef);
+  let hookWithTriggerSchema = _.defaults({
+    triggerSchema: {
+      type: 'object',
+      properties: {
+        location: {
+          type: 'string',
+          default: 'Niskayuna, NY',
+        },
+        otherVariable: {
+          type: 'number',
+          default: '12',
+        },
+      },
+      additionalProperties: true,
+    },
+  }, hookDef);
 
   let dailyHookDef = _.defaults({
     schedule: ['0 0 3 * * *'],
@@ -314,11 +328,11 @@ suite('API', function() {
     test('successfully triggers task with the given payload', async () => {
       await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema);
       var res = await helper.hooks.getTriggerToken('foo', 'bar');
-      await helper.hooks.triggerHookWithToken('foo', 'bar', res.token, {a: 'payload'});
+      await helper.hooks.triggerHookWithToken('foo', 'bar', res.token, {location: 'New Zealand'});
       assume(helper.creator.fireCalls).deep.equals([{
         hookGroupId: 'foo',
         hookId: 'bar',
-        context: {a: 'payload'},
+        context: {firedBy: 'triggerHookWithToken', payload: {location: 'New Zealand'}},
         options: {},
       }]);
     });
@@ -362,7 +376,7 @@ suite('API', function() {
       assume(helper.creator.fireCalls).deep.equals([{
         hookGroupId: 'foo',
         hookId: 'bar',
-        context: payload,
+        context: {firedBy: 'triggerHookWithToken', payload},
         options: {},
       }]);
     });

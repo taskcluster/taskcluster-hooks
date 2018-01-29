@@ -48,7 +48,19 @@ The schema validation also applies any default values specified in the schema.
 
 ### Webhooks
 
-Not yet implemented (context is `{}`)
+Webhooks are invoked with the `triggerHookWithToken` API method. This method is
+designed to be easy to configure with other services like Github.  It requires
+no authentication, but includes a secret token in the URL to prevent
+unauthorized calls to the endpoint.
+
+The context is similar to that for `triggerHook`:
+
+```
+{
+    firedBy: "triggerHookWithToken",
+    payload: {..}               // API call payload
+}
+```
 
 ## Task Times
 

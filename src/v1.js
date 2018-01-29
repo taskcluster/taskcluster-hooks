@@ -487,9 +487,14 @@ api.declare({
   stability:    'experimental',
   description: [
     'This endpoint triggers a defined hook with a valid token.',
+    '',
+    'The HTTP payload must match the hook\s `triggerSchema`.  If it does, it is',
+    'provided as the `payload` property of the JSON-e context used to render the',
+    'task template.',
   ].join('\n'),
 }, async function(req, res) {
   var payload = req.body;
+  const ajv = new Ajv({format: 'full', verbose: true, allErrors: true});
 
   var hook = await this.Hook.load({
     hookGroupId: req.params.hookGroupId,
@@ -506,6 +511,21 @@ api.declare({
     return res.reportError('AuthenticationFailed', 'invalid hook token', {});
   }
 
-  let resp = await this.taskcreator.fire(hook, payload);
+  //Using ajv lib to check if the context respect the triggerSchema
+  var validate = ajv.compile(hook.triggerSchema);
+
+  if (validate && payload) {
+    let valid = validate(payload);
+    if (!valid) {
+      return res.reportError('InputError', '{{message}}', {message: validate.errors[0].message});
+    }
+  }
+  // build the context for the task creation
+  let context = {
+    firedBy: 'triggerHookWithToken',
+    payload: payload,
+  };
+
+  let resp = await this.taskcreator.fire(hook, context);
   return res.reply(resp);
 });
