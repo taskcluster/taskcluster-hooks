@@ -26,11 +26,9 @@ var api = new API({
     ' * `[\'0 0 1 * * *\']` -- daily at 1:00 UTC',
     ' * `[\'0 0 9,21 * * 1-5\', \'0 0 12 * * 0,6\']` -- weekdays at 9:00 and 21:00 UTC, weekends at noon',
     '',
-    'Hooks can be parametrized using JSON-e. The task definition in the hook is used as a JSON-e template,',
-    'and the paramters are supplied as a JSON-e context. The result of rendeting the template and context is',
-    'used as the task definition. Currently context can only be provided with the triggerHook method.',
-    'You can find a complete description about how json-e works, here:',
-    'https://github.com/taskcluster/json-e',
+    'The task definition is used as a JSON-e template, with a context depending on how it is fired.  See',
+    'https://docs.taskcluster.net/reference/core/taskcluster-hooks/docs/firing-hooks',
+    'for more information.',
   ].join('\n'),
   schemaPrefix:  'http://schemas.taskcluster.net/hooks/v1/',
 });
@@ -349,6 +347,10 @@ api.declare({
   stability:    'experimental',
   description: [
     'This endpoint will trigger the creation of a task from a hook definition.',
+    '',
+    'The HTTP payload must match the hook\s `triggerSchema`.  If it does, it is',
+    'provided as the `context` property of the JSON-e context used to render the',
+    'task template.',
   ].join('\n'),
 }, async function(req, res) {
   var hookGroupId = req.params.hookGroupId;
