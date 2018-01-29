@@ -40,7 +40,7 @@ against the hook's `triggerSchema`, and supplied in the JSON-e context as
 ```
 {
     firedBy: "triggerHook",
-    context: {..}               // API call payload
+    payload: {..}               // API call payload
 }
 ```
 

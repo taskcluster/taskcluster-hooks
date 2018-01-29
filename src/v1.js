@@ -349,7 +349,7 @@ api.declare({
     'This endpoint will trigger the creation of a task from a hook definition.',
     '',
     'The HTTP payload must match the hook\s `triggerSchema`.  If it does, it is',
-    'provided as the `context` property of the JSON-e context used to render the',
+    'provided as the `payload` property of the JSON-e context used to render the',
     'task template.',
   ].join('\n'),
 }, async function(req, res) {
@@ -380,7 +380,7 @@ api.declare({
   // build the context for the task creation
   let context = {
     firedBy: 'triggerHook',
-    context: payload,
+    payload: payload,
   };
 
   try {

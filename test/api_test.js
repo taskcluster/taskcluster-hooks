@@ -255,7 +255,7 @@ suite('API', function() {
       assume(helper.creator.fireCalls).deep.equals([{
         hookGroupId: 'foo',
         hookId: 'bar',
-        payload: {firedBy: 'triggerHook', context: {location: 'Belo Horizonte, MG', foo: 'triggerHook'}},
+        payload: {firedBy: 'triggerHook', payload: {location: 'Belo Horizonte, MG', foo: 'triggerHook'}},
         options: {},
       }]);
     });
@@ -272,7 +272,7 @@ suite('API', function() {
       helper.creator.shouldFail = true; // firing the hook should fail..
       helper.scopes('hooks:trigger-hook:foo/bar');
       try {
-        await helper.hooks.triggerHook('foo', 'bar', {context: {location: 'Belo Horizonte, MG'}, 
+        await helper.hooks.triggerHook('foo', 'bar', {bar: {location: 'Belo Horizonte, MG'}, 
           foo: 'triggerHook'});
       } catch (err) {
         assume(err.statusCode).equals(400);
@@ -283,7 +283,7 @@ suite('API', function() {
     });
 
     test('fails if no hook exists', async () => {
-      await helper.hooks.triggerHook('foo', 'bar', {context: {location: 'Belo Horizonte, MG'}, 
+      await helper.hooks.triggerHook('foo', 'bar', {bar: {location: 'Belo Horizonte, MG'}, 
         foo: 'triggerHook'}).then(
         () => { throw new Error('The resource should not exist'); },
         (err) => { assume(err.statusCode).equals(404); });
