@@ -21,18 +21,23 @@ properties:
       title: "Cron Pattern"
       type: string
       description: |
-          Cron-like specification for when tasks should be created.  The pattern is
-          parsed in a UTC context.
-          See [cron-parser on npm](https://www.npmjs.com/package/cron-parser).
-          Note that tasks may not be created at exactly the time specified.
+        Cron-like specification for when tasks should be created.  The pattern is
+        parsed in a UTC context.
+        See [cron-parser on npm](https://www.npmjs.com/package/cron-parser).
+        Note that tasks may not be created at exactly the time specified.
     uniqueItems: true
     default: []
   expires:                {$const: expires}
   deadline:               {$const: deadline}
   task:                   {$ref: "http://schemas.taskcluster.net/hooks/v1/task-template.json"}
   triggerSchema:
+    description: |
+      The hook definition is a json-e template which is combined with a trigger
+      payload to form a task definition. The `triggerSchema` property defines a
+      json schema to validate the trigger payload against.
     type:                 'object'          
     default:              {type: "object", additionalProperties: false}
+    $ref:                 'http://json-schema.org/draft-06/schema#'
 additionalProperties:     false
 required:
   - metadata
