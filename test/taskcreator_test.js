@@ -56,31 +56,18 @@ suite('TaskCreator', function() {
           default: '12',
         },
       },
-      additionalProperties: false,
-    },
-    task:               {
-      // use a JSON-e construct at the top level to double-check that this is a
-      // JSON-e template and not treated as a task definition
-      $if: 'true',
-      then: {
-        provisionerId: 'no-provisioner',
-        workerType: 'test-worker',
-        metadata: {
-          name: 'test task',
-          description: 'task created by tc-hooks tests',
-          owner: 'taskcluster@mozilla.com',
-          source: 'http://taskcluster.net',
-        },  
-        payload: {}, 
-      },
-    },
-  };
-
-  var createTestHook = async function(scopes, extra) {
-    let hook = _.cloneDeep(defaultHook);
-    hook.task.then.extra = extra;
-    hook.task.then.scopes = scopes;
-    return await helper.Hook.create(hook);
+      bindings:           [],
+      deadline:           '1 day',
+      expires:            '1 day',
+      schedule:           {format: {type: 'none'}},
+      triggerToken:       taskcluster.slugid(),
+      lastFire:           {},
+      nextTaskId:         taskcluster.slugid(),
+      nextScheduledDate:  new Date(2000, 0, 0, 0, 0, 0, 0),
+      triggerSchema:      {type: 'object', properties:{location:{type: 'string', default: 'Niskayuna, NY'}, 
+        otherVariable: {type: 'integer', default: '12'}}, additionalProperties: false},
+      pulseExchanges:     [],
+    });
   };
 
   test('firing a real task succeeds', async function() {

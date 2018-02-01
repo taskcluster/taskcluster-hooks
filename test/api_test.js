@@ -9,51 +9,23 @@ suite('API', function() {
 
   // Use the same hook definition for everything
   var hookDef = require('./test_definition');
-  let hookWithTriggerSchema = _.defaults({
-    triggerSchema: {
-      type: 'object',
-      properties: {
-        location: {
-          type: 'string',
-          default: 'Niskayuna, NY',
-        },
-        otherVariable: {
-          type: 'number',
-          default: '12',
-        },
+  let hookWithTriggerSchema = _.defaults(
+    { 
+      triggerSchema: {type: 'object', 
+        properties:{
+          location:
+          {
+            type: 'string',
+            default: 'Niskayuna, NY',
+          }, 
+          otherVariable: {
+            type: 'number',
+            default: '12',
+          },
+        }, 
+        additionalProperties: false,
       },
-      additionalProperties: true,
-    },
-  }, hookDef);
-
-  let hookWithHookIds = {
-    task: {
-      provisionerId:  'no-provisioner',
-      workerType:     'test-worker',
-      schedulerId:    'my-scheduler',
-      taskGroupId:    'dSlITZ4yQgmvxxAi4A8fHQ',
-      scopes:         [],
-      payload:        {},
-      metadata:       {
-        name:         'Unit testing task',
-        description:  'Task created during unit tests',
-        owner:        'amiyaguchi@mozilla.com',
-        source:       'http://github.com/',
-      },
-      tags: {
-        purpose:      'taskcluster-testing',
-      },
-    },
-    expires:          '10 days',
-    deadline:         '3 days',
-    hookId:           'bar',
-    hookGroupId:      'foo',
-    metadata: {
-      name:           'Unit testing hook',
-      description:    'Hook created during unit tests',
-      owner:          'amiyaguchi@mozilla.com',
-    },
-  };
+    }, hookDef);
 
   let dailyHookDef = _.defaults({
     schedule: ['0 0 3 * * *'],
@@ -299,8 +271,8 @@ suite('API', function() {
 
     test('returns the last run status for triggerHook', async () => {
       await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema);
-      await helper.hooks.triggerHook('foo', 'bar', {location: 'Belo Horizonte, MG', 
-        foo: 'triggerHook'});
+      await helper.hooks.triggerHook('foo', 'bar', {context: {location: 'Belo Horizonte, MG'}, 
+        triggeredBy: 'triggerHook'});
       var r1 = await helper.hooks.getHookStatus('foo', 'bar');
       assume(r1).contains('lastFire');
       assume(r1.lastFire.result).is.equal('success');
@@ -316,8 +288,8 @@ suite('API', function() {
   suite('triggerHook', function() {
     test('should launch task with the given payload', async () => {
       await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema);
-      await helper.hooks.triggerHook('foo', 'bar', {location: 'Belo Horizonte, MG', 
-        foo: 'triggerHook'});
+      await helper.hooks.triggerHook('foo', 'bar', {context: {location: 'Belo Horizonte, MG'}, 
+        triggeredBy: 'triggerHook'});
       assume(helper.creator.fireCalls).deep.equals([{
         hookGroupId: 'foo',
         hookId: 'bar',
@@ -328,19 +300,11 @@ suite('API', function() {
 
     test('checking schema validation', async () => {
       await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema);
-      await helper.hooks.triggerHook('foo', 'bar', {location: 28}).then(
-        () => { throw new Error('Expected an error'); },
-        (err) => { debug('Got expected error: %s', err); });
-    });
-
-    test('checking more than one schema validation error', async () => {
-      await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema);
-      await helper.hooks.triggerHook('foo', 'bar', {
-        location: 28, 
-        otherVariable: 'twelve',
-        foo: 'triggerHook',
-      }).then(() => { throw new Error('Expected an error'); },
-        (err) => { debug('Got expected error: %s', err); });
+      await helper.hooks.triggerHook('foo', 'bar', {context: {location: 28}, 
+        triggeredBy: 'triggerHook'}).then(() => { 
+        throw new Error('Location type should be string'); 
+      },
+      (err) => { assume(err.statusCode).equals(400); });
     });
 
     test('fails when creating the task fails', async () => {

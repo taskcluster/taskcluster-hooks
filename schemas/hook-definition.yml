@@ -30,7 +30,9 @@ properties:
       a task definition that is submitted to the Queue service.
     type:                 object
   triggerSchema:
-    type:                 object
+    type:                 object  
+  pulseExchanges:         
+    type:                 array 
 additionalProperties:     false
 required:
   - hookGroupId
@@ -41,3 +43,4 @@ required:
   - expires
   - deadline
   - triggerSchema
+  - pulseExchanges

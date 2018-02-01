@@ -67,6 +67,7 @@ suite('Scheduler', function() {
         lastFire:           {result: 'no-fire'},
         triggerToken:       taskcluster.slugid(),
         triggerSchema:      {},
+        pulseExchanges:     [],
       };
 
       await scheduler.Hook.create(_.defaults({
@@ -120,6 +121,7 @@ suite('Scheduler', function() {
         nextTaskId:         taskcluster.slugid(),
         nextScheduledDate:  new Date(3000, 0, 0, 0, 0, 0, 0),
         triggerSchema:      {},
+        pulseExchanges:     [],
       });
     });
 

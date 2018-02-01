@@ -25,8 +25,7 @@ listener.bind({
 });
 
 listener.on('message', (msg) => {
-  queuePulses = msg;
-  console.log(queuePulses);
+  console.log(pulsedMessages)
 });
 
- listener.resume();
+ await listener.resume();

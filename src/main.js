@@ -141,6 +141,13 @@ var load = loader({
     setup: ({schedulerNoStart}) => schedulerNoStart.start(),
   },
 
+  worker:{
+    requires:['cfg'],
+    setup: ({cfg}) => {
+      ({});
+    },
+  },
+
 }, ['profile', 'process']);
 
 // If this file is executed launch component from first argument

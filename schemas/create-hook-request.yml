@@ -44,9 +44,10 @@ properties:
       as described in https://docs.taskcluster.net/reference/core/taskcluster-hooks/docs/firing-hooks to produce
       a task definition that is submitted to the Queue service.
     type:                 object
-  triggerSchema:
-    type:                 'object'          
-    default:              {type: "object", additionalProperties: false}
+    default:              {type: "object", additionalProperties: false} 
+  pulseExchanges:
+    type:                 array
+    default:              [] 
 additionalProperties:     false
 required:
   - metadata
