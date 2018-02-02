@@ -38,7 +38,7 @@ var load = loader({
     setup: ({cfg, process, monitor}) => {
       return data.Hook.setup(_.defaults({
         table:        cfg.app.hookTable,
-        monitor:      monitor.prefix('data.hooks'),
+        monitor:      monitor.prefix('table.hooks'),
       }, cfg.azureTable, cfg.taskcluster));
     },
   },
