@@ -328,6 +328,7 @@ api.declare({
     hook.schedule          = schedule;
     hook.nextTaskId        = taskcluster.slugid();
     hook.nextScheduledDate = nextDate(schedule);
+    hook.pulseExchanges    = hookDef.pulseExchanges;
   });
 
   let definition = await hook.definition();
