@@ -141,12 +141,20 @@ var load = loader({
     setup: ({schedulerNoStart}) => schedulerNoStart.start(),
   },
 
-  worker:{
-    requires:['cfg'],
-    setup: ({cfg}) => {
-      ({});
-    },
+  pulseMessages: {
+    requires: ['cfg'],
+    setup: async ({cfg}) => new PulseMessages({
+      credentials: cfg.pulse,
+      queueName: cfg.pulseMessage.queueName,
+      exchange: cfg.pulseMessage.exchange,
+      routingPatternKey: cfg.pulseMessage.routingPatternKey,
+    }),
   },
+
+  worker:{
+    requires:['pulseMessages'],
+    setup: async ({pulseMessages}) => pulseMessages.setup(),
+  }, 
 
 }, ['profile', 'process']);
 
