@@ -8,6 +8,7 @@ var validator   = require('taskcluster-lib-validate');
 var v1          = require('./v1');
 var _           = require('lodash');
 var Scheduler   = require('./scheduler');
+var PulseMessages = require('./pulselistener');
 var AWS         = require('aws-sdk');
 var config      = require('typed-env-config');
 var loader      = require('taskcluster-lib-loader');
@@ -143,11 +144,13 @@ var load = loader({
 
   pulseMessages: {
     requires: ['cfg'],
-    setup: async ({cfg}) => new PulseMessages({
+    setup: async ({cfg, Hook, taskcreator}) => new PulseMessages({
+      Hook,
+      taskcreator,
       credentials: cfg.pulse,
       queueName: cfg.pulseMessage.queueName,
       exchange: cfg.pulseMessage.exchange,
-      routingPatternKey: cfg.pulseMessage.routingPatternKey,
+      routingKeyPattern: cfg.pulseMessage.routingKeyPattern,
     }),
   },
 

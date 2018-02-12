@@ -31,7 +31,7 @@ defaults:
   pulseMessage:        
     queueName:        pulsedMessages
     exchange:         exchange/taskcluster-queue/v1/task-completed
-    routingPatternKey: '#'
+    routingKeyPattern: '#'
   aws:
     ses:
       # Credentials with access to SES to send hook failure emails
