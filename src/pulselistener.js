@@ -1,6 +1,5 @@
 var taskcluster = require('taskcluster-client');
-var v1          = require('./v1');
-var hookApi = require('./v1');
+var hookApi     = require('./v1');
 
 /**
  * Create a listener to trigger hooks with pulse messages 
@@ -30,6 +29,8 @@ class PulseMessages {
 
   async setup(options) {
     options = options || {};
+    let hook = await this.Hook.load({hookGroupId: 'garbage', hookId: 'on-pulse-message'}, true);
+
     assert(!this.connection, 'You can not setup twice!');
     this.connection = new taskcluster.PulseConnection({
       username: this.credentials.username,
@@ -50,9 +51,13 @@ class PulseMessages {
           return connection.createChannel().then(function(channel) {
             var ok = channel.assertQueue(this.queueName);
             ok = ok.then(function(queueOk) {
-              return channel.consume(this.queueName, function(message) {
-                
-              });  
+              let resp = this.taskcreator.fire(hook, message);
+              if (resp) {
+                return channel.consume(this.queueName, function(message) {});
+              } else {
+                return res.reportError('InputError', 'Could not create task: {{error}}',
+                  {error: (error || 'unknown').toString()});
+              }  
             });
           });
         } catch (err) {
@@ -60,8 +65,7 @@ class PulseMessages {
         }
       });
     }).catch(console.warn);
-    
-    return listener.resume();
+    listener.resume();
   }
 }
 
