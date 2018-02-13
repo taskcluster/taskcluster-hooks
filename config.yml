@@ -30,7 +30,7 @@ defaults:
     password:         !env PULSE_PASSWORD
   pulseMessage:        
     queueName:        pulsedMessages
-    exchange:         exchange/taskcluster-queue/v1/task-completed
+    exchange:         exchange/alexandra/hook-test
     routingKeyPattern: '#'
   aws:
     ses:
