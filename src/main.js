@@ -143,7 +143,7 @@ var load = loader({
   },
 
   pulseMessages: {
-    requires: ['cfg'],
+    requires: ['cfg', 'Hook', 'taskcreator'],
     setup: async ({cfg, Hook, taskcreator}) => new PulseMessages({
       Hook,
       taskcreator,
