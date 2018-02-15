@@ -27,30 +27,42 @@ class PulseMessages {
   /**
    * Set up the pulse message listener.
   */
+
   async setup(options) {
     options = options || {};
-    let hook = await this.Hook.load({hookGroupId: 'garbage', hookId: 'on-pulse-message'}, true);
-
+    
     assert(!this.connection, 'You can not setup twice!');
     this.connection = new taskcluster.PulseConnection({
       username: this.credentials.username,
       password: this.credentials.password,
     });
-    var listener = new taskcluster.PulseListener({
-      connection: this.connection,
-      queueName: this.queueName,
-    });
-    listener.bind({
-      exchange: this.exchange, 
-      routingKeyPattern: this.routingKeyPattern,
-    });
-     
+
+    var allHooks = await this.Hook.scan({});
+    console.log('All hooks:', allHooks);
+    /*
+      if (hook.pulseExchanges.length > 0) {        
+        var listener = new taskcluster.PulseListener({
+          connection: this.connection,
+          queueName: [hook.hookGroupId, '/', hook.hookId].join(''),
+        });
+        
+        hook.pulseExchanges.forEach(pulses => {
+          console.log('Binding now: ', pulses.exchange);
+          listener.bind({
+            exchange: pulses.exchange, 
+            routingKeyPattern: pulses.routingKeyPattern,
+          });
+        });
+      }
+    }});*/
+   
     listener.on('message', (message) => {
-      console.log(Array.prototype.slice.call(arguments));
+      console.log(message);
       this.taskcreator.fire(hook, message.payload);
     });
     listener.resume();
   }
+
 }
 
 module.exports = PulseMessages;
