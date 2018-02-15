@@ -162,6 +162,7 @@ var Hook = Entity.configure({
     pulseExchanges: Entity.types.JSON,
   },
   migrate: function(item) {
+    delete item.bindings;
     item.pulseExchanges = [];
     return item;
   },
