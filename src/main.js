@@ -38,7 +38,7 @@ var load = loader({
     setup: ({cfg, process, monitor}) => {
       return data.Hook.setup(_.defaults({
         table:        cfg.app.hookTable,
-        monitor:      monitor.prefix(cfg.app.hookTable.toLowerCase()),
+        monitor:      monitor.prefix('table.hooks'),
       }, cfg.azureTable, cfg.taskcluster));
     },
   },
@@ -91,6 +91,7 @@ var load = loader({
       credentials: cfg.taskcluster.credentials,
       tier: 'core',
       schemas: validator.schemas,
+      publish: cfg.app.publishMetaData,
       references: [
         {
           name: 'api',

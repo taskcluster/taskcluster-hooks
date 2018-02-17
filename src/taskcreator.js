@@ -23,9 +23,16 @@ class TaskCreator {
 
     let task = jsone(hook.task, context);
     let created = options.created || new Date();
-    task.created = created.toJSON();
-    task.deadline = taskcluster.fromNowJSON(hook.deadline, created);
-    task.expires = taskcluster.fromNowJSON(hook.expires, created);
+    // only apply created, deadline, and expires if they are not set
+    if (!task.created) {
+      task.created = created.toJSON();
+    }
+    if (!task.deadline) {
+      task.deadline = taskcluster.fromNowJSON(hook.deadline, created);
+    }
+    if (!task.expires) {
+      task.expires = taskcluster.fromNowJSON(hook.expires, created);
+    }
     // set the taskGroupId to the taskId, thereby creating a new task group
     // and following the convention for decision tasks.
     task.taskGroupId = options.taskId;
@@ -72,7 +79,7 @@ class MockTaskCreator extends TaskCreator {
     this.fireCalls = [];
   }
 
-  async fire(hook, payload, options) {
+  async fire(hook, context, options) {
     if (this.shouldFail) {
       let err = new Error('uhoh');
       err.statusCode = 499;
@@ -83,7 +90,7 @@ class MockTaskCreator extends TaskCreator {
     this.fireCalls.push({
       hookGroupId: hook.hookGroupId,
       hookId: hook.hookId,
-      payload,
+      context,
       options});
     var taskId = options.taskId || taskcluster.slugid();
     return {
