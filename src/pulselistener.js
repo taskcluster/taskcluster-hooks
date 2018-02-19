@@ -1,5 +1,4 @@
 var taskcluster = require('taskcluster-client');
-var hookApi     = require('./v1');
 var assert      = require('assert');
 
 /**
@@ -37,32 +36,45 @@ class PulseMessages {
       password: this.credentials.password,
     });
 
-    var allHooks = await this.Hook.scan({});
-    console.log('All hooks:', allHooks);
-    /*
-      if (hook.pulseExchanges.length > 0) {        
-        var listener = new taskcluster.PulseListener({
-          connection: this.connection,
-          queueName: [hook.hookGroupId, '/', hook.hookId].join(''),
-        });
-        
-        hook.pulseExchanges.forEach(pulses => {
-          console.log('Binding now: ', pulses.exchange);
-          listener.bind({
-            exchange: pulses.exchange, 
-            routingKeyPattern: pulses.routingKeyPattern,
-          });
-        });
-      }
-    }});*/
-   
-    listener.on('message', (message) => {
-      console.log(message);
-      this.taskcreator.fire(hook, message.payload);
-    });
-    listener.resume();
-  }
+    this.listeners = [];
 
+    const handleMessage = async (message, hookGroupId, hookId) => {
+      // get hook (in case it has changed)
+      let hook = await this.Hook.load({
+        hookGroupId: hookGroupId,
+        hookId: hookId,
+      }, true);
+      
+      //fire 
+      this.taskcreator.fire(hook, message.payload);
+    };
+
+    await this.Hook.scan({}, {
+      handler: hook => {
+        if (hook.pulseExchanges.length > 0) {        
+          var listener = new taskcluster.PulseListener({
+            connection: this.connection,
+            queueName: [hook.hookGroupId, '/', hook.hookId].join(''),
+          });
+          
+          hook.pulseExchanges.forEach(pulses => {
+            console.log(`Binding to ${pulses.exchange} (${pulses.routingKeyPattern}) \
+                         for ${hook.hookGroupId}/${hook.hookId}`);
+            listener.bind({
+              exchange: pulses.exchange, 
+              routingKeyPattern: pulses.routingKeyPattern,
+            });
+          });
+
+          listener.on('message',
+            (message) => handleMessage(message, hook.hookGroupId, hook.hookId));
+
+          listener.resume();
+          this.listeners.push(listener);
+        }
+      },
+    });
+  }
 }
 
 module.exports = PulseMessages;
