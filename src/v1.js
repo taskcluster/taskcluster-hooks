@@ -33,6 +33,12 @@ var api = new API({
   name: 'hooks',
   context: ['Hook', 'taskcreator'],
   schemaPrefix:  'http://schemas.taskcluster.net/hooks/v1/',
+  params:{},
+  context:[
+    'publisher',
+    'Hook',
+    'taskcreator',
+  ],
 });
 
 // Export api
@@ -262,6 +268,8 @@ api.declare({
         {});
     }
   }
+  //send a pulse message 
+  await this.publisher.hookCreated({hookGroupId, hookId});
 
   // Reply with the hook definition
   return res.reply(hookDef);
@@ -332,6 +340,10 @@ api.declare({
   });
 
   let definition = await hook.definition();
+
+  //send a pulse message 
+  await this.publisher.hookUpdated({hookGroupId, hookId});
+
   return res.reply(definition);
 });
 
@@ -355,6 +367,9 @@ api.declare({
 
   // Remove the resource if it exists
   await this.Hook.remove({hookGroupId, hookId}, true);
+
+  //send a pulse message 
+  await this.publisher.hookDeleted({hookGroupId, hookId});
 
   return res.status(200).json({});
 });
