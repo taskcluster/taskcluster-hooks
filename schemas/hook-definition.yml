@@ -23,6 +23,9 @@ properties:
   expires:                {$const: expires}
   deadline:               {$const: deadline}
   task:
+    title:                "Task Template"
+    description: |
+      Definition of a task embedded in a hook
     type:                 object
   triggerSchema:
     type:                 object
