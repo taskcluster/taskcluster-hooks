@@ -47,8 +47,14 @@ properties:
           task-graph scheduler, this is the `taskGraphId`.
         type:           string
         pattern:        {$const: slugid-pattern}
-      deadline:         {$const: deadline}
-      expires:          {$const: expires}
+      deadline:
+        title:          "Deadline"
+        type:           object
+        format:         date-time
+      expires:
+        title:          "Expires"
+        type:           object
+        format:         date-time
       retriesLeft:
         title:          "Retries Left"
         description: |
