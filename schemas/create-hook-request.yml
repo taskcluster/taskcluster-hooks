@@ -29,7 +29,8 @@ properties:
     default: []
   expires:                {$const: expires}
   deadline:               {$const: deadline}
-  task:                   {$ref: "http://schemas.taskcluster.net/hooks/v1/task-template.json"}
+  task:
+    type:                 object
   triggerSchema:
     type:                 'object'          
     default:              {type: "object", additionalProperties: false}
