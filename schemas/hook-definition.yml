@@ -25,7 +25,9 @@ properties:
   task:
     title:                "Task Template"
     description: |
-      Definition of a task embedded in a hook
+      Template for the task definition.  This is rendered using [JSON-e](https://taskcluster.github.io/json-e/)
+      as described in https://docs.taskcluster.net/reference/core/taskcluster-hooks/docs/firing-hooks to produce
+      a task definition that is submitted to the Queue service.
     type:                 object
   triggerSchema:
     type:                 object
