@@ -57,9 +57,9 @@ suite('TaskCreator', function() {
       additionalProperties: false,
     },
     task:               {
-      $if: "true",
+      $if: 'true',
       then: {
-        provisionerId: 'no-provisioner',                                                                                                                                                     
+        provisionerId: 'no-provisioner',
         workerType: 'test-worker',
         metadata: {
           name: 'test task',
@@ -68,7 +68,7 @@ suite('TaskCreator', function() {
           source: 'http://taskcluster.net',
         },  
         payload: {}, 
-      }
+      },
     },
   };
 
