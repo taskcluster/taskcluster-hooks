@@ -73,6 +73,11 @@ suite('TaskCreator', function() {
       },
       additionalProperties: false,
     },
+    task:               {
+      $let: {
+        random: 1
+      },
+    },
   };
 
   var createTestHook = async function(scopes, extra) {
