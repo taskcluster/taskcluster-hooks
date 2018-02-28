@@ -57,9 +57,18 @@ suite('TaskCreator', function() {
       additionalProperties: false,
     },
     task:               {
-      let: {
-        random: 1,
-      },
+      $if: "true",
+      then: {
+        provisionerId: 'no-provisioner',                                                                                                                                                     
+        workerType: 'test-worker',
+        metadata: {
+          name: 'test task',
+          description: 'task created by tc-hooks tests',
+          owner: 'taskcluster@mozilla.com',
+          source: 'http://taskcluster.net',
+        },  
+        payload: {}, 
+      }
     },
   };
 
