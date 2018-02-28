@@ -57,7 +57,7 @@ suite('TaskCreator', function() {
       additionalProperties: false,
     },
     task:               {
-      $let: {
+      let: {
         random: 1,
       },
     },
