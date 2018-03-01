@@ -33,6 +33,16 @@ suite('API', function() {
     schedule: ['0 0 3 0 * *'],
   }, hookWithTriggerSchema);
 
+  let hookWithTask = _.defaults({
+    task: {
+      type: 'object',
+      created: new Date(3000, 0, 0, 0, 0, 0, 0),
+      expires: '1 minute',
+      deadline: '2 minutes',
+    },
+  }, dailyHookDef);
+
+
   let setHookLastFire = async (hookGroupId, hookId, lastFire) => {
     let hook = await helper.Hook.load({hookGroupId, hookId}, true);
     await hook.modify((hook) => { hook.lastFire = lastFire; });
@@ -89,6 +99,17 @@ suite('API', function() {
       await helper.hooks.createHook('foo', 'bar', invalidHookDef).then(
         () => { throw new Error('Expected an error'); },
         (err) => { assume(err.statusCode).equals(400); });
+    });
+
+    test('fires a hook with its own task time', async () => {
+      let hook = _.cloneDeep(hookWithTask);
+      var r1 = await helper.hooks.getHookSchedule('foo', 'bar');
+      hook.task.created = r1.nextScheduledDate;
+      hook.task.expires = '1 minute';
+      hook.task.deadline = '2 minutes';
+      return await.helper.hooks.createHook('foo', 'bar', hookWithTask);
+      assume(new Date(hook.task.expires) - new Date(hook.task.created)).to.equal(60000);
+      assume(new Date(hook.task.deadline) - new Date(hook.task.created)).to.equal(120000);
     });
   });
 
