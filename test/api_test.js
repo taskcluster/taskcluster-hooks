@@ -107,7 +107,7 @@ suite('API', function() {
       hook.task.created = r1.nextScheduledDate;
       hook.task.expires = '1 minute';
       hook.task.deadline = '2 minutes';
-      return await.helper.hooks.createHook('foo', 'bar', hookWithTask);
+      return await helper.hooks.createHook('foo', 'bar', hookWithTask);
       assume(new Date(hook.task.expires) - new Date(hook.task.created)).to.equal(60000);
       assume(new Date(hook.task.deadline) - new Date(hook.task.created)).to.equal(120000);
     });
