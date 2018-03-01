@@ -6,6 +6,7 @@ var API         = require('taskcluster-lib-api');
 var nextDate    = require('../src/nextdate');
 var _           = require('lodash');
 var Ajv         = require('ajv');
+var pulselistener = require('./pulselistener');
 
 var api = new API({
   title:         'Hooks API Documentation',
@@ -270,6 +271,7 @@ api.declare({
   }
   //send a pulse message 
   await this.publisher.hookCreated({hookGroupId, hookId});
+  pulselistener.createListener();
 
   // Reply with the hook definition
   return res.reply(hookDef);
