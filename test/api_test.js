@@ -42,7 +42,6 @@ suite('API', function() {
     },
   }, dailyHookDef);
 
-
   let setHookLastFire = async (hookGroupId, hookId, lastFire) => {
     let hook = await helper.Hook.load({hookGroupId, hookId}, true);
     await hook.modify((hook) => { hook.lastFire = lastFire; });
