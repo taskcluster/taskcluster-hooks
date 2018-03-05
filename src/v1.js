@@ -278,6 +278,8 @@ api.declare({
   var hookId = req.params.hookId;
   var hookDef = req.body;
 
+  hookDef = _.defaults({hookGroupId, hookId}, hookDef);
+
   await req.authorize({hookGroupId, hookId});
 
   var hook = await this.Hook.load({hookGroupId, hookId}, true);
