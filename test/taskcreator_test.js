@@ -35,8 +35,6 @@ suite('TaskCreator', function() {
     hookId:             'tc-test-hook',
     metadata:           {},
     bindings:           [],
-    deadline:           '1 day',
-    expires:            '1 day',
     schedule:           {format: {type: 'none'}},
     triggerToken:       taskcluster.slugid(),
     lastFire:           {},

@@ -19,9 +19,6 @@ var Hook = Entity.configure({
     task:               Entity.types.JSON,
     // pulse bindings (TODO; empty for now)
     bindings:           Entity.types.JSON,
-    // timings for the task (in fromNow format, e.g., "1 day")
-    deadline:           Entity.types.String,
-    expires:            Entity.types.String,
     // schedule for this task (see schemas/schedule.yml)
     schedule:           Entity.types.JSON,
     // access token used to trigger this task via webhook
@@ -44,9 +41,6 @@ var Hook = Entity.configure({
     task:               Entity.types.JSON,
     // pulse bindings (TODO; empty for now)
     bindings:           Entity.types.JSON,
-    // timings for the task (in fromNow format, e.g., "1 day")
-    deadline:           Entity.types.String,
-    expires:            Entity.types.String,
     // schedule for this task (see schemas/schedule.yml)
     schedule:           Entity.types.JSON,
     // access token used to trigger this task via webhook
@@ -77,9 +71,6 @@ var Hook = Entity.configure({
     task:               Entity.types.JSON,
     // pulse bindings (TODO; empty for now)
     bindings:           Entity.types.JSON,
-    // timings for the task (in fromNow format, e.g., "1 day")
-    deadline:           Entity.types.String,
-    expires:            Entity.types.String,
     // schedule for this task (see schemas/schedule.yml)
     schedule:           Entity.types.JSON,
     // access token used to trigger this task via webhook
@@ -108,9 +99,6 @@ var Hook = Entity.configure({
     task:               Entity.types.JSON,
     // pulse bindings (TODO; empty for now)
     bindings:           Entity.types.JSON,
-    // timings for the task (in fromNow format, e.g., "1 day")
-    deadline:           Entity.types.String,
-    expires:            Entity.types.String,
     // schedule for this task (see schemas/schedule.yml)
     schedule:           Entity.types.JSON,
     // access token used to trigger this task via webhook
@@ -140,8 +128,6 @@ Hook.prototype.definition = function() {
     metadata:     _.cloneDeep(this.metadata),
     task:         _.cloneDeep(this.task),
     schedule:     _.cloneDeep(this.schedule),
-    deadline:     this.deadline,
-    expires:      this.expires,
     triggerSchema:this.triggerSchema,
   });
 };
