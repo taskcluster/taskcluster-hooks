@@ -26,7 +26,14 @@ suite('TaskCreator', function() {
 
   var creator = null;
 
+  var secret = null;
+
   setup(async () => {
+    if (process.env.TASK_ID) {
+      secret = await helper.getSecrets();
+      process.env.TASKCLUSTER_CLIENT_ID = secret.secret.credentials.clientId;
+      process.env.TASKCLUSTER_ACCESS_TOKEN = secret.secret.credentials.accessToken;
+    }
     creator = await helper.load('taskcreator', helper.loadOptions);
   });
 
