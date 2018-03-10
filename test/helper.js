@@ -7,14 +7,10 @@ var load        = require('../src/main');
 var config      = require('typed-env-config');
 var _           = require('lodash');
 
-var cfg = config({profile: 'test'});
-
 var helper = module.exports = {};
 
 helper.load = load;
 helper.loadOptions = {profile: 'test', process: 'test-helper'};
-
-helper.haveRealCredentials = !!cfg.taskcluster.credentials.accessToken;
 
 helper.getSecrets = function() {
   console.log('Fetching secrets');
@@ -33,6 +29,16 @@ helper.setup = function() {
     testing.fakeauth.start({
       'test-client': ['*'],
     });
+
+    if (process.env.TASK_ID) {
+      secret = await helper.getSecrets();
+      process.env.TASKCLUSTER_CLIENT_ID = secret.secret.credentials.clientId;
+      process.env.TASKCLUSTER_ACCESS_TOKEN = secret.secret.credentials.accessToken;
+    }
+
+    var cfg = config({profile: 'test'});
+
+    helper.haveRealCredentials = !!cfg.taskcluster.credentials.accessToken;
 
     // Create Hooks table
     helper.Hook = await load('Hook', helper.loadOptions);
