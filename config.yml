@@ -25,9 +25,13 @@ defaults:
     env:              !env NODE_ENV
     forceSSL:         !env:bool FORCE_SSL
     trustProxy:       false
-  #pulse:
-  #  username: !env PULSE_USERNAME
-  #  password: !env PULSE_PASSWORD
+  pulse:
+    username:         !env PULSE_USERNAME
+    password:         !env PULSE_PASSWORD
+  pulseMessage:        
+    queueName:        pulsedMessages
+    exchange:         exchange/alexandra/hook-test
+    routingKeyPattern: '#'
   aws:
     ses:
       # Credentials with access to SES to send hook failure emails

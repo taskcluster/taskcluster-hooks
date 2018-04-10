@@ -8,6 +8,8 @@ var validator   = require('taskcluster-lib-validate');
 var v1          = require('./v1');
 var _           = require('lodash');
 var Scheduler   = require('./scheduler');
+var PulseMessages = require('./pulselistener');
+var exchanges   = require('./exchanges');
 var AWS         = require('aws-sdk');
 var config      = require('typed-env-config');
 var loader      = require('taskcluster-lib-loader');
@@ -50,6 +52,7 @@ var load = loader({
         prefix:  'hooks/v1/',
         publish:          cfg.app.publishMetaData,
         aws:     cfg.aws.validator,
+        publish: cfg.app.publishMetaData,
       });
     },
   },
@@ -67,14 +70,28 @@ var load = loader({
     }),
   },
 
+  publisher: {
+    requires: ['cfg', 'validator', 'monitor'],
+    setup: ({cfg, validator, monitor}) =>
+      exchanges.setup({
+        credentials:      cfg.pulse,
+        exchange:         cfg.pulseMessage.exchange,
+        validator:        validator,
+        referencePrefix:  'hooks/v1/exchanges.json',
+        publish:          cfg.app.publishMetaData,
+        aws:              cfg.aws,
+        monitor:          monitor.prefix('publisher'),
+      }),
+  },
+
   router: {
-    requires: ['cfg', 'validator', 'Hook', 'taskcreator', 'monitor'],
-    setup: async ({cfg, validator, Hook, taskcreator, monitor}) => {
+    requires: ['cfg', 'validator', 'Hook', 'taskcreator', 'monitor', 'publisher'],
+    setup: async ({cfg, validator, Hook, taskcreator, monitor, publisher}) => {
 
       await Hook.ensureTable();
 
       return v1.setup({
-        context: {Hook, taskcreator},
+        context: {Hook, taskcreator, publisher},
         validator,
         authBaseUrl:      cfg.taskcluster.authBaseUrl,
         publish:          cfg.app.publishMetaData,
@@ -97,7 +114,13 @@ var load = loader({
         {
           name: 'api',
           reference: v1.reference({baseUrl: cfg.server.publicUrl + '/v1'}),
-        },
+        }, {
+          name: 'pulse messages',
+          reference: exchanges.reference({
+            exchange: cfg.pulseMessage.exchange,
+            credentials: cfg.pulse,
+          }),
+        },  
       ],
     }),
   },
@@ -141,6 +164,22 @@ var load = loader({
     setup: ({schedulerNoStart}) => schedulerNoStart.start(),
   },
 
+  pulseMessages: {
+    requires: ['cfg', 'Hook', 'taskcreator'],
+    setup: async ({cfg, Hook, taskcreator}) => new PulseMessages({
+      Hook,
+      taskcreator,
+      credentials: cfg.pulse,
+      queueName: cfg.pulseMessage.queueName,
+      exchange: cfg.pulseMessage.exchange,
+      routingKeyPattern: cfg.pulseMessage.routingKeyPattern,
+    }),
+  },
+
+  worker:{
+    requires:['pulseMessages'],
+    setup: async ({pulseMessages}) => pulseMessages.setup(),
+  },
 }, ['profile', 'process']);
 
 // If this file is executed launch component from first argument

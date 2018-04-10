@@ -6,6 +6,7 @@ var API         = require('taskcluster-lib-api');
 var nextDate    = require('../src/nextdate');
 var _           = require('lodash');
 var Ajv         = require('ajv');
+var pulselistener = require('./pulselistener');
 
 var api = new API({
   title:         'Hooks API Documentation',
@@ -33,6 +34,12 @@ var api = new API({
   name: 'hooks',
   context: ['Hook', 'taskcreator'],
   schemaPrefix:  'http://schemas.taskcluster.net/hooks/v1/',
+  params:{},
+  context:[
+    'publisher',
+    'Hook',
+    'taskcreator',
+  ],
 });
 
 // Export api
@@ -262,6 +269,9 @@ api.declare({
         {});
     }
   }
+  //send a pulse message 
+  await this.publisher.hookCreated({hookGroupId, hookId});
+  pulselistener.createListener();
 
   // Reply with the hook definition
   return res.reply(hookDef);
@@ -328,9 +338,14 @@ api.declare({
     hook.schedule          = schedule;
     hook.nextTaskId        = taskcluster.slugid();
     hook.nextScheduledDate = nextDate(schedule);
+    hook.pulseExchanges    = hookDef.pulseExchanges;
   });
 
   let definition = await hook.definition();
+
+  //send a pulse message 
+  await this.publisher.hookUpdated({hookGroupId, hookId});
+
   return res.reply(definition);
 });
 
@@ -354,6 +369,9 @@ api.declare({
 
   // Remove the resource if it exists
   await this.Hook.remove({hookGroupId, hookId}, true);
+
+  //send a pulse message 
+  await this.publisher.hookDeleted({hookGroupId, hookId});
 
   return res.status(200).json({});
 });
@@ -395,7 +413,7 @@ api.declare({
   var validate = ajv.compile(hook.triggerSchema);
 
   if (validate && payload) {
-    let valid = validate(payload);
+    let valid = validate(payload.context);
     if (!valid) {
       return res.reportError('InputError', '{{message}}', {
         message: ajv.errorsText(validate.errors, {separator: '; '}

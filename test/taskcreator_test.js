@@ -33,48 +33,50 @@ suite('TaskCreator', function() {
   });
 
   var defaultHook = {
-    hookGroupId:        'tc-hooks-tests',
-    hookId:             'tc-test-hook',
-    metadata:           {},
-    bindings:           [],
-    deadline:           '1 day',
-    expires:            '1 day',
-    schedule:           {format: {type: 'none'}},
-    triggerToken:       taskcluster.slugid(),
-    lastFire:           {},
-    nextTaskId:         taskcluster.slugid(),
-    nextScheduledDate:  new Date(2000, 0, 0, 0, 0, 0, 0),
-    triggerSchema:      {
-      type: 'object',
-      properties: {
-        location: {
-          type: 'string',
-          default: 'Niskayuna, NY',
-        }, 
-        otherVariable: {
-          type: 'integer',
-          default: '12',
+      hookGroupId:        'tc-hooks-tests',
+      hookId:             'tc-test-hook',
+      metadata:           {},
+      task:               {
+        provisionerId:    'no-provisioner',
+        workerType:       'test-worker',
+        schedulerId:      'my-scheduler',
+        taskGroupId:      'dSlITZ4yQgmvxxAi4A8fHQ',
+        scopes:           [],
+        payload:          {},
+        metadata:         {
+          name:           'Unit testing task',
+          description:    'Task created during unit tests',
+          owner:          'amiyaguchi@mozilla.com',
+          source:         'http://github.com/',
+        },
+        tags: {
+          purpose:        'taskcluster-testing',
         },
       },
-      additionalProperties: false,
-    },
-    task:               {
-      // use a JSON-e construct at the top level to double-check that this is a
-      // JSON-e template and not treated as a task definition
-      $if: 'true',
-      then: {
-        provisionerId: 'no-provisioner',
-        workerType: 'test-worker',
-        metadata: {
-          name: 'test task',
-          description: 'task created by tc-hooks tests',
-          owner: 'taskcluster@mozilla.com',
-          source: 'http://taskcluster.net',
-        },  
-        payload: {}, 
+      bindings:           [],
+      deadline:           '1 day',
+      expires:            '1 day',
+      schedule:           {format: {type: 'none'}},
+      triggerToken:       taskcluster.slugid(),
+      lastFire:           {},
+      nextTaskId:         taskcluster.slugid(),
+      nextScheduledDate:  new Date(2000, 0, 0, 0, 0, 0, 0),
+      triggerSchema:      {
+        type: 'object',
+        properties: {
+          location: {
+            type: 'string',
+            default: 'Niskayuna, NY',
+          }, 
+          otherVariable: {
+            type: 'integer',
+            default: '12',
+          },
+        },
+        additionalProperties: false,
       },
-    },
-  };
+      pulseExchanges:     [],
+  }; 
 
   var createTestHook = async function(scopes, extra) {
     let hook = _.cloneDeep(defaultHook);
