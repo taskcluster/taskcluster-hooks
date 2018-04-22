@@ -1,18 +1,18 @@
-suite('Scheduler', function() {
-  var _                 = require('lodash');
-  var assert            = require('assert');
-  var assume            = require('assume');
-  var Scheduler         = require('../src/scheduler');
-  var debug             = require('debug')('test:test_schedule_hooks');
-  var helper            = require('./helper');
-  var taskcreator       = require('../src/taskcreator');
-  var taskcluster       = require('taskcluster-client');
+const _ = require('lodash');
+const assert = require('assert');
+const assume = require('assume');
+const Scheduler = require('../src/scheduler');
+const debug = require('debug')('test:test_schedule_hooks');
+const helper = require('./helper');
+const taskcreator = require('../src/taskcreator');
+const taskcluster = require('taskcluster-client');
 
+suite('Scheduler', function() {
   this.slow(500);
   helper.setup();
 
-  var scheduler = null;
-  var creator = null;
+  let scheduler = null;
+  let creator = null;
   setup(async () => {
     creator = new taskcreator.MockTaskCreator();
     let notify = require('./fake-notify');
@@ -32,7 +32,7 @@ suite('Scheduler', function() {
   });
 
   test('calls its poll method in a loop when started', async () => {
-    var callCount = 0;
+    let callCount = 0;
     scheduler.poll = () => { callCount += 1; };
     scheduler.pollingDelay = 1;  // 1 ms
 
@@ -41,7 +41,7 @@ suite('Scheduler', function() {
     await new Promise((accept) => { setTimeout(accept, 5); });
 
     // verify it polled
-    var newCallCount = callCount;
+    let newCallCount = callCount;
     assume(1).lessThan(newCallCount);
     assume(newCallCount).lessThan(7);
 
@@ -56,7 +56,7 @@ suite('Scheduler', function() {
   suite('poll method', function() {
     setup(async () => {
       await scheduler.Hook.scan({}, {handler: hook => {return hook.remove();}});
-      var hookParams = {
+      const hookParams = {
         hookGroupId:        'tests',
         metadata:           {},
         task:               {},
@@ -90,7 +90,7 @@ suite('Scheduler', function() {
     });
 
     test('calls handleHook only for past-due hooks', async () => {
-      var handled = [];
+      const handled = [];
       scheduler.handleHook = async (hook) => handled.push(hook.hookId);
       await scheduler.poll();
       assume(handled).eql(['pastHook']);
@@ -98,7 +98,7 @@ suite('Scheduler', function() {
   });
 
   suite('handleHook method', function() {
-    var hook;
+    let hook;
 
     setup(async () => {
       await scheduler.Hook.scan({}, {handler: hook => {return hook.remove();}});

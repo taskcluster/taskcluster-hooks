@@ -1,28 +1,28 @@
-var data        = require('../src/data');
-var taskcluster = require('taskcluster-client');
-var taskcreator = require('../src/taskcreator');
-var testing     = require('taskcluster-lib-testing');
-var v1          = require('../src/v1');
-var load        = require('../src/main');
-var config      = require('typed-env-config');
-var _           = require('lodash');
+const data        = require('../src/data');
+const taskcluster = require('taskcluster-client');
+const taskcreator = require('../src/taskcreator');
+const testing     = require('taskcluster-lib-testing');
+const v1          = require('../src/v1');
+const load        = require('../src/main');
+const config      = require('typed-env-config');
+const _           = require('lodash');
 
-var helper = module.exports = {};
+const helper = module.exports = {};
 
 helper.load = load;
 helper.loadOptions = {profile: 'test', process: 'test-helper'};
 
 helper.getSecrets = function() {
   console.log('Fetching secrets');
-  var secrets = new taskcluster.Secrets({baseUrl: 'http://taskcluster/secrets/v1/'});
+  const secrets = new taskcluster.Secrets({baseUrl: 'http://taskcluster/secrets/v1/'});
   return secrets.get('repo:github.com/taskcluster/taskcluster-hooks');
 };
 // Call this in suites or tests that make API calls, hooks etc; it will set up
 // what's required to respond to those calls.
 helper.setup = function() {
   // Hold reference to authServer
-  var authServer = null;
-  var webServer = null;
+  let authServer = null;
+  let webServer = null;
 
   // Setup before tests
   suiteSetup(async () => {
@@ -36,7 +36,7 @@ helper.setup = function() {
       process.env.TASKCLUSTER_ACCESS_TOKEN = secret.secret.credentials.accessToken;
     }
 
-    var cfg = config({profile: 'test'});
+    const cfg = config({profile: 'test'});
 
     helper.haveRealCredentials = !!cfg.taskcluster.credentials.accessToken;
 
@@ -56,7 +56,7 @@ helper.setup = function() {
 
     // Create client for working with API
     helper.baseUrl = 'http://localhost:' + webServer.address().port + '/v1';
-    var reference = v1.reference({baseUrl: helper.baseUrl});
+    const reference = v1.reference({baseUrl: helper.baseUrl});
     helper.Hooks = taskcluster.createClient(reference);
 
     // Utility to create an Hooks instance with limited scopes

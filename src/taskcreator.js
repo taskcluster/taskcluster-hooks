@@ -1,8 +1,8 @@
-var assert      = require('assert');
-var taskcluster = require('taskcluster-client');
-var debug       = require('debug')('hooks:taskcreator');
-var _           = require('lodash');
-var jsone       = require('json-e');
+const assert = require('assert');
+const taskcluster = require('taskcluster-client');
+const debug = require('debug')('hooks:taskcreator');
+const _ = require('lodash');
+const jsone = require('json-e');
 
 class TaskCreator {
   /** Create a TaskCreator instance.
@@ -91,7 +91,7 @@ class MockTaskCreator extends TaskCreator {
       hookId: hook.hookId,
       context,
       options});
-    var taskId = options.taskId || taskcluster.slugid();
+    const taskId = options.taskId || taskcluster.slugid();
     return {
       status: {
         taskId: taskId,

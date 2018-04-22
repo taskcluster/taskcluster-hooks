@@ -1,12 +1,13 @@
-suite('TaskCreator', function() {
-  var assume            = require('assume');
-  var taskcreator       = require('../src/taskcreator');
-  var debug             = require('debug')('test:test_schedule_hooks');
-  var helper            = require('./helper');
-  var data              = require('../src/data');
-  var taskcluster       = require('taskcluster-client');
-  var _                 = require('lodash');
+const assume = require('assume');
+const taskcreator = require('../src/taskcreator');
+const debug = require('debug')('test:test_schedule_hooks');
+const helper = require('./helper');
+const data = require('../src/data');
+const taskcluster = require('taskcluster-client');
+const _ = require('lodash');
+const hookDef = require('./test_definition');
 
+suite('TaskCreator', function() {
   this.slow(500);
   helper.setup();
 
@@ -26,15 +27,14 @@ suite('TaskCreator', function() {
    *    - project:taskcluster:tests:tc-hooks:scope/required/for/task/1
    */
 
-  var creator = null;
-
-  var secret = null;
+  let creator = null;
+  let secret = null;
 
   setup(async () => {
     creator = await helper.load('taskcreator', helper.loadOptions);
   });
 
-  var defaultHook = {
+  const defaultHook = {
     hookGroupId:        'tc-hooks-tests',
     hookId:             'tc-test-hook',
     metadata:           {},
@@ -78,7 +78,7 @@ suite('TaskCreator', function() {
     },
   };
 
-  var createTestHook = async function(scopes, extra) {
+  const createTestHook = async function(scopes, extra) {
     let hook = _.cloneDeep(defaultHook);
     hook.task.then.extra = extra;
     hook.task.then.scopes = scopes;
@@ -168,20 +168,13 @@ suite('TaskCreator', function() {
 });
 
 suite('MockTaskCreator', function() {
-  var assume            = require('assume');
-  var taskcreator       = require('../src/taskcreator');
-  var debug             = require('debug')('test:test_schedule_hooks');
-  var helper            = require('./helper');
-  var hookDef           = require('./test_definition');
-  var _                 = require('lodash');
-
-  var creator = null;
+  let creator = null;
   setup(async () => {
     creator = new taskcreator.MockTaskCreator();
   });
 
   test('the fire method records calls', async function() {
-    let hook = _.cloneDeep(hookDef);
+    const hook = _.cloneDeep(hookDef);
     hook.hookGroupId = 'g';
     hook.hookId = 'h';
     await creator.fire(hook, {p: 1}, {o: 1});
