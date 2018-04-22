@@ -15,7 +15,6 @@ defaults:
     signingKey:       !env TABLE_SIGNING_KEY
     cryptoKey:        !env TABLE_CRYPTO_KEY
   taskcluster:
-    authBaseUrl:      null
     credentials:
       clientId:       !env TASKCLUSTER_CLIENT_ID
       accessToken:    !env TASKCLUSTER_ACCESS_TOKEN
@@ -68,7 +67,7 @@ test:
     # use in-memory fake Azure by default; you can override in user-config.yml
     # this with a real account together with setting `taskcluster.credentials`
     # to test against the real Azure Table Storage.
-    account:          'inMemory'
+    account:          'jungle'
     signingKey:       'not a secret'
     cryptoKey:        'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA='
   monitoring:

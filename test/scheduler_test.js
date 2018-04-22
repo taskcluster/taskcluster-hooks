@@ -7,18 +7,18 @@ const helper = require('./helper');
 const taskcreator = require('../src/taskcreator');
 const taskcluster = require('taskcluster-client');
 
-suite('Scheduler', function() {
+helper.secrets.mockSuite('scheduler_test.js', ['taskcluster'], function(mock, skipping) {
+  helper.withHook(mock, skipping);
+  helper.withTaskCreator(mock, skipping);
+
   this.slow(500);
-  helper.setup();
 
   let scheduler = null;
-  let creator = null;
   setup(async () => {
-    creator = new taskcreator.MockTaskCreator();
     let notify = require('./fake-notify');
     scheduler = new Scheduler({
       Hook: helper.Hook,
-      taskcreator: creator,
+      taskcreator: helper.creator,
       pollingDelay: 1,
       notify: notify,
     });
@@ -31,6 +31,15 @@ suite('Scheduler', function() {
     scheduler = null;
   });
 
+  // work around https://github.com/mochajs/mocha/issues/2819
+  const subSkip = () => {
+    suiteSetup(function() {
+      if (skipping()) {
+        this.skip();
+      }
+    });
+  };
+
   test('calls its poll method in a loop when started', async () => {
     let callCount = 0;
     scheduler.poll = () => { callCount += 1; };
@@ -38,7 +47,7 @@ suite('Scheduler', function() {
 
     // run for a while..
     scheduler.start();
-    await new Promise((accept) => { setTimeout(accept, 5); });
+    await new Promise(accept => { setTimeout(accept, 5); });
 
     // verify it polled
     let newCallCount = callCount;
@@ -47,15 +56,15 @@ suite('Scheduler', function() {
 
     // terminate and run for a while longer
     scheduler.terminate();
-    await new Promise((accept) => { setTimeout(accept, 5); });
+    await new Promise(accept => { setTimeout(accept, 5); });
 
     // verify it didn't poll any more
     assume(callCount).equals(newCallCount);
   });
 
   suite('poll method', function() {
+    subSkip();
     setup(async () => {
-      await scheduler.Hook.scan({}, {handler: hook => {return hook.remove();}});
       const hookParams = {
         hookGroupId:        'tests',
         metadata:           {},
@@ -69,19 +78,19 @@ suite('Scheduler', function() {
         triggerSchema:      {},
       };
 
-      await scheduler.Hook.create(_.defaults({
+      await helper.Hook.create(_.defaults({
         hookId:             'futureHook',
         nextTaskId:         taskcluster.slugid(),
         nextScheduledDate:  new Date(4000, 0, 0, 0, 0, 0, 0),
       }, hookParams));
 
-      await scheduler.Hook.create(_.defaults({
+      await helper.Hook.create(_.defaults({
         hookId:             'pastHook',
         nextTaskId:         taskcluster.slugid(),
         nextScheduledDate:  new Date(2000, 0, 0, 0, 0, 0, 0),
       }, hookParams));
 
-      await scheduler.Hook.create(_.defaults({
+      await helper.Hook.create(_.defaults({
         hookId:             'pastHookNotScheduled',
         nextTaskId:         taskcluster.slugid(),
         schedule:           [],
@@ -98,12 +107,11 @@ suite('Scheduler', function() {
   });
 
   suite('handleHook method', function() {
+    subSkip();
     let hook;
 
     setup(async () => {
-      await scheduler.Hook.scan({}, {handler: hook => {return hook.remove();}});
-
-      hook = await scheduler.Hook.create({
+      hook = await helper.Hook.create({
         hookGroupId:        'tests',
         hookId:             'test',
         metadata:           {
@@ -129,12 +137,12 @@ suite('Scheduler', function() {
 
       await scheduler.handleHook(hook);
 
-      let updatedHook = await scheduler.Hook.load({
+      let updatedHook = await helper.Hook.load({
         hookGroupId: 'tests',
         hookId:      'test',
       }, true);
 
-      assume(creator.fireCalls).deep.equals([{
+      assume(helper.creator.fireCalls).deep.equals([{
         hookGroupId: 'tests',
         hookId: 'test',
         context: {firedBy: 'schedule'},
@@ -155,7 +163,7 @@ suite('Scheduler', function() {
       let oldTaskId = hook.nextTaskId;
       let oldScheduledDate = hook.nextScheduledDate;
 
-      creator.shouldFail = true;
+      helper.creator.shouldFail = true;
 
       let emailSent = false;
       scheduler.sendFailureEmail = async (hook, err) => { emailSent = true; };
@@ -164,7 +172,7 @@ suite('Scheduler', function() {
 
       assume(emailSent).is.equal(true);
 
-      let updatedHook = await scheduler.Hook.load({
+      let updatedHook = await helper.Hook.load({
         hookGroupId: 'tests',
         hookId:      'test',
       }, true);
@@ -177,7 +185,7 @@ suite('Scheduler', function() {
     });
 
     test('on error, notify is used with correct options', async () => {
-      creator.shouldFail = true;
+      helper.creator.shouldFail = true;
       await scheduler.handleHook(hook);
       
       assume(scheduler.notify.lastEmail).exists();

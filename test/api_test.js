@@ -4,11 +4,13 @@ const assume = require('assume');
 const debug = require('debug')('test:api:createhook');
 const helper = require('./helper');
 
-suite('API', function() {
-  helper.setup();
+helper.secrets.mockSuite('api_test.js', ['taskcluster'], function(mock, skipping) {
+  helper.withHook(mock, skipping);
+  helper.withTaskCreator(mock, skipping);
+  helper.withServer(mock, skipping);
 
   // Use the same hook definition for everything
-  const hookDef = require('./test_definition');
+  const hookDef = _.cloneDeep(require('./test_definition'));
   const hookWithTriggerSchema = _.defaults({
     triggerSchema: {
       type: 'object',
@@ -67,7 +69,17 @@ suite('API', function() {
     await hook.modify((hook) => { hook.lastFire = lastFire; });
   };
 
+  // work around https://github.com/mochajs/mocha/issues/2819.
+  const subSkip = () => {
+    suiteSetup(function() {
+      if (skipping()) {
+        this.skip();
+      }
+    });
+  };
+
   suite('createHook', function() {
+    subSkip();
     test('creates a hook', async () => {
       const r1 = await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema);
       const r2 = await helper.hooks.hook('foo', 'bar');
@@ -133,15 +145,28 @@ suite('API', function() {
   });
 
   suite('updateHook', function() {
+    subSkip();
     test('updates a hook', async () => {
-      const input = require('./test_definition');
-      const inputWithTriggerSchema = _.defaults({triggerSchema: {type: 'object', properties:{location:{type: 'string',
-        default: 'Niskayuna, NY'}, otherVariable: {type: 'integer', default: '12'}}, 
-      additionalProperties: false}}, input);
+      const inputWithTriggerSchema = _.defaults({
+        triggerSchema: {
+          type: 'object',
+          properties:{
+            location:{
+              type: 'string',
+              default: 'Niskayuna, NY',
+            },
+            otherVariable: {
+              type: 'integer',
+              default: '12',
+            },
+          },
+          additionalProperties: false,
+        },
+      }, hookDef);
       const r1 = await helper.hooks.createHook('foo', 'bar', inputWithTriggerSchema);
 
-      input.metadata.owner = 'test@test.org';
-      const r2 = await helper.hooks.updateHook('foo', 'bar', input);
+      inputWithTriggerSchema.metadata.owner = 'test@test.org';
+      const r2 = await helper.hooks.updateHook('foo', 'bar', inputWithTriggerSchema);
       assume(r2.metadata).deep.not.equals(r1.metadata);
       assume(r2.task).deep.equals(r1.task);
     });
@@ -173,6 +198,7 @@ suite('API', function() {
   });
 
   suite('removeHook', function() {
+    subSkip();
     test('removes a hook', async () => {
       await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema);
       await helper.hooks.removeHook('foo', 'bar');
@@ -194,6 +220,7 @@ suite('API', function() {
   });
 
   suite('listHookGroups', function() {
+    subSkip();
     test('returns valid groups', async () => {
       const input = ['foo', 'bar', 'baz', 'qux'];
       for (let i = 0; i < input.length; i++) {
@@ -208,6 +235,7 @@ suite('API', function() {
   });
 
   suite('listHooks', function() {
+    subSkip();
     test('lists hooks in the given group only', async () => {
       const input = ['foo', 'bar', 'baz', 'qux'];
       for (let i = 0; i < input.length; i++) {
@@ -223,6 +251,7 @@ suite('API', function() {
   });
 
   suite('hook', function() {
+    subSkip();
     test('returns a hook', async () => {
       await helper.hooks.createHook('gp', 'hk', hookWithTriggerSchema);
       const r1 = await helper.hooks.hook('gp', 'hk');
@@ -237,6 +266,7 @@ suite('API', function() {
   });
 
   suite('getTriggerToken', function() {
+    subSkip();
 
     test('returns the same token', async () => {
       await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema);
@@ -253,6 +283,7 @@ suite('API', function() {
   });
 
   suite('getHookSchedule', function() {
+    subSkip();
     test('returns {schedule: []} for a non-scheduled task', async () => {
       await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema);
       const r1 = await helper.hooks.getHookSchedule('foo', 'bar');
@@ -274,6 +305,7 @@ suite('API', function() {
   });
 
   suite('getHookStatus', function() {
+    subSkip();
     test('returns "no-fire" for a non-scheduled, non-fired task', async () => {
       await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema);
       const r1 = await helper.hooks.getHookStatus('foo', 'bar');
@@ -314,6 +346,7 @@ suite('API', function() {
   });
 
   suite('triggerHook', function() {
+    subSkip();
     test('should launch task with the given payload', async () => {
       await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema);
       await helper.hooks.triggerHook('foo', 'bar', {location: 'Belo Horizonte, MG', 
@@ -367,7 +400,7 @@ suite('API', function() {
   });
 
   suite('resetTriggerToken', function() {
-
+    subSkip();
     test('creates a new token', async () => {
       await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema);
       const r1 = await helper.hooks.getTriggerToken('foo', 'bar');
@@ -386,7 +419,7 @@ suite('API', function() {
   });
 
   suite('triggerHookWithToken', function() {
-
+    subSkip();
     test('successfully triggers task with the given payload', async () => {
       await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema);
       const res = await helper.hooks.getTriggerToken('foo', 'bar');
