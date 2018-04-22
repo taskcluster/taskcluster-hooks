@@ -36,7 +36,7 @@
   },
   "devDependencies": {
     "mocha": "^4.0.1",
-    "taskcluster-lib-testing": "^2.0.2"
+    "taskcluster-lib-testing": "^3.2.2"
   },
   "engine-strict": true,
   "engines": {
