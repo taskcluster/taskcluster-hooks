@@ -10,10 +10,12 @@ suite('TaskCreator', function() {
   this.slow(500);
   helper.setup();
 
-  // these tests require real TaskCluster credentials (for the queue insert)
-  if (!helper.haveRealCredentials && !process.env.TASK_ID) {
-    this.pending = true;
-  }
+  suiteSetup(function() {
+    // these tests require real TaskCluster credentials (for the queue insert)
+    if (!helper.haveRealCredentials && !process.env.TASK_ID) {
+      this.pending = true;
+    }
+  });
 
   /* Note that this requires the following set up in production TC:
    *  - TC credentials given in cfg.get('taskcluster:credentials') with
