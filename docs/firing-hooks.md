@@ -17,9 +17,10 @@ submits it to the Queue service via `Queue.createTask`.
 A hook definition's `task` property is, in fact, a [JSON-e](https://taskcluster.github.io/json-e/) template.
 When a hook is fired, that template is rendered and the result is submitted to `Queue.createTask`.
 
-The context for that rendering is an object with property `firedBy`, giving
-the action that led to the hook firing. The other properties of the object vary
-depending on this property.
+The context for that rendering is an object with property `firedBy`, giving the
+action that led to the hook firing; and `newTaskId` giving the taskId of the
+task being created. The other properties of the object vary depending on the
+`firedBy` property.
 
 ### Scheduled Tasks
 
@@ -28,6 +29,7 @@ When a hook is fired at a scheduled time, the JSON-e context is simply:
 ```
 {
     firedBy' 'schedule'
+    newTaskId: 'IgfFQSAqQwysozyeB7udBw',
 }
 ```
 
@@ -40,6 +42,7 @@ against the hook's `triggerSchema`, and supplied in the JSON-e context as
 ```
 {
     firedBy: "triggerHook",
+    newTaskId: 'IgfFQSAqQwysozyeB7udBw',
     payload: {..}               // API call payload
 }
 ```
@@ -58,6 +61,7 @@ The context is similar to that for `triggerHook`:
 ```
 {
     firedBy: "triggerHookWithToken",
+    newTaskId: 'IgfFQSAqQwysozyeB7udBw',
     payload: {..}               // API call payload
 }
 ```

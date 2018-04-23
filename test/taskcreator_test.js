@@ -94,10 +94,13 @@ suite('TaskCreator', function() {
   });
 
   test('firing a real task with a JSON-e context succeeds', async function() {
-    let hook = await createTestHook([], {context:{
-      valueFromContext: {$eval: 'someValue + 13'},
-      flattenedDeep: {$flattenDeep: {$eval: 'numbers'}}, 
-      firedBy: '${firedBy}'},
+    let hook = await createTestHook([], {
+      context:{
+        valueFromContext: {$eval: 'someValue + 13'},
+        flattenedDeep: {$flattenDeep: {$eval: 'numbers'}},
+        firedBy: '${firedBy}',
+        newTaskId: '${newTaskId}',
+      },
     }); 
     let taskId = taskcluster.slugid();
     let resp = await creator.fire(hook, {
@@ -108,7 +111,12 @@ suite('TaskCreator', function() {
     let queue = new taskcluster.Queue({credentials: helper.cfg.taskcluster.credentials});
     let task = await queue.task(taskId);
     assume(task.extra).deeply.equals({
-      context: {valueFromContext: 55, flattenedDeep:[1, 2, 3, 4, 5, 6], firedBy: 'schedule'},
+      context: {
+        valueFromContext: 55,
+        flattenedDeep: [1, 2, 3, 4, 5, 6],
+        firedBy: 'schedule',
+        newTaskId: taskId,
+      },
     });
   });   
 
