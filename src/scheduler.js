@@ -95,7 +95,7 @@ class Scheduler extends events.EventEmitter {
   /** Handle spawning a new task for a given hook that needs to be scheduled */
   async handleHook(hook) {
     let lastFire;
-    console.log('firing hook %s/%s with taskId %s', hook.hookGroupId, hook.hookId, hook.nextTaskId);
+    debug('firing hook %s/%s with taskId %s', hook.hookGroupId, hook.hookId, hook.nextTaskId);
     try {
       await this.taskcreator.fire(hook, {firedBy: 'schedule'}, {
         taskId: hook.nextTaskId,
@@ -113,8 +113,7 @@ class Scheduler extends events.EventEmitter {
         time: new Date(),
       };
     } catch (err) {
-      console.log('Failed to handle hook: %s/%s' +
-                  ', with err: %s', hook.hookGroupId, hook.hookId, err);
+      debug('Failed to handle hook: %s/%s, with err: %s', hook.hookGroupId, hook.hookId, err);
 
       // for 500's, pretend nothing happend and we'll try again on the next go-round.
       if (err.statusCode >= 500) {
@@ -144,8 +143,7 @@ class Scheduler extends events.EventEmitter {
         }
       });
     } catch (err) {
-      console.log('Failed to update hook (will re-fire): %s/%s' +
-                  ', with err: %s', hook.hookGroupId, hook.hookId, err);
+      debug('Failed to update hook (will re-fire): %s/%s, with err: %s', hook.hookGroupId, hook.hookId, err);
       return;
     }
   }
