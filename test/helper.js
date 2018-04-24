@@ -31,7 +31,7 @@ helper.withHook = (mock, skipping) => {
   suiteSetup(async function() {
     if (mock) {
       // TODO: rename this config to be consistent
-      helper.load.cfg('azureTable.account', 'inMemory');
+      helper.load.cfg('azure.accountName', 'inMemory');
     }
 
     helper.Hook = await helper.load('Hook');

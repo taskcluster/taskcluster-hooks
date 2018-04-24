@@ -36,10 +36,14 @@ const load = loader({
   Hook: {
     requires: ['cfg', 'process', 'monitor'],
     setup: ({cfg, process, monitor}) => {
-      return data.Hook.setup(_.defaults({
-        table:        cfg.app.hookTable,
-        monitor:      monitor.prefix('table.hooks'),
-      }, cfg.azureTable, cfg.taskcluster));
+      return data.Hook.setup({
+        table: cfg.app.hookTableName,
+        monitor: monitor.prefix('table.hooks'),
+        account: cfg.azure.accountName,
+        cryptoKey: cfg.azure.cryptoKey,
+        signingKey: cfg.azure.signingKey,
+        credentials: cfg.taskcluster.credentials,
+      });
     },
   },
 
