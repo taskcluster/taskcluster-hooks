@@ -98,7 +98,7 @@ helper.secrets.mockSuite('scheduler_test.js', ['taskcluster'], function(mock, sk
         hookId:             'pastHookNotScheduled',
         nextTaskId:         taskcluster.slugid(),
         schedule:           [],
-        nextScheduledDate:  new Date(4000, 0, 0, 0, 0, 0, 0),
+        nextScheduledDate:  new Date(2000, 0, 0, 0, 0, 0, 0),
       }, hookParams));
     });
 
@@ -106,7 +106,8 @@ helper.secrets.mockSuite('scheduler_test.js', ['taskcluster'], function(mock, sk
       const handled = [];
       scheduler.handleHook = async (hook) => handled.push(hook.hookId);
       await scheduler.poll();
-      assume(handled).eql(['pastHook']);
+      handled.sort();
+      assume(handled).eql(['pastHook', 'pastHookNotScheduled']);
     });
   });
 
