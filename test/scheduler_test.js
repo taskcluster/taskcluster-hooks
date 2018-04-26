@@ -13,15 +13,18 @@ helper.secrets.mockSuite('scheduler_test.js', ['taskcluster'], function(mock, sk
 
   this.slow(500);
 
+  setup(function() {
+    helper.load.cfg('app.scheduler.pollingDelay', 1);
+    helper.load.inject('notify', new taskcluster.Notify({
+      fake: {
+        email: email => null,
+      },
+    }));
+  });
+
   let scheduler = null;
   setup(async () => {
-    let notify = require('./fake-notify');
-    scheduler = new Scheduler({
-      Hook: helper.Hook,
-      taskcreator: helper.creator,
-      pollingDelay: 1,
-      notify: notify,
-    });
+    scheduler = await helper.load('schedulerNoStart');
   });
 
   teardown(async () => {
@@ -29,6 +32,7 @@ helper.secrets.mockSuite('scheduler_test.js', ['taskcluster'], function(mock, sk
       await scheduler.terminate();
     }
     scheduler = null;
+    helper.load.remove('schedulerNoStart'); // so we get a fresh one..
   });
 
   // work around https://github.com/mochajs/mocha/issues/2819
@@ -188,11 +192,13 @@ helper.secrets.mockSuite('scheduler_test.js', ['taskcluster'], function(mock, sk
       helper.creator.shouldFail = true;
       await scheduler.handleHook(hook);
       
-      assume(scheduler.notify.lastEmail).exists();
-      let lastEmail = scheduler.notify.lastEmail;
+      const notify = await helper.load('notify');
+      assume(notify.fakeCalls.email.length).greaterThan(0);
+      let lastEmail = notify.fakeCalls.email[0].payload;
       let email = scheduler.createEmail(hook, 'error explanation', 'error explanation');
       assume(lastEmail.address).is.equal(email.address);
       assume(lastEmail.subject).is.equal(email.subject);
+      assume(lastEmail.content).exists();
 
       // validating content of email
       let phrase = `The hooks service was unable to create a task for hook ${hook.hookGroupId}/${hook.hookId}`;
