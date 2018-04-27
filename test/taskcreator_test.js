@@ -99,7 +99,7 @@ suite('TaskCreator', function() {
         valueFromContext: {$eval: 'someValue + 13'},
         flattenedDeep: {$flattenDeep: {$eval: 'numbers'}},
         firedBy: '${firedBy}',
-        newTaskId: '${newTaskId}',
+        taskId: '${taskId}',
       },
     }); 
     let taskId = taskcluster.slugid();
@@ -115,7 +115,7 @@ suite('TaskCreator', function() {
         valueFromContext: 55,
         flattenedDeep: [1, 2, 3, 4, 5, 6],
         firedBy: 'schedule',
-        newTaskId: taskId,
+        taskId,
       },
     });
   });   
