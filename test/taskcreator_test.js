@@ -154,6 +154,17 @@ suite('taskcreator_test.js', function() {
       assume(new Date(task.expires) - new Date(task.created)).to.equal(120000);
     });
 
+    test('firing a real task that sets its own taskGroupId works', async function() {
+      let hook = _.cloneDeep(defaultHook);
+      hook.task.then.taskGroupId = taskcluster.slugid();
+      await helper.Hook.create(hook);
+      let taskId = taskcluster.slugid();
+      let resp = await creator.fire(hook, {}, {taskId});
+
+      const task = await fetchFiredTask(taskId);
+      assume(task.taskGroupId).equals(hook.task.then.taskGroupId);
+    });
+
     test('firing a real task includes values from context', async function() {
       let hook = await createTestHook([], {
         env: {DUSTIN_LOCATION: '${location}'},
@@ -170,17 +181,6 @@ suite('taskcreator_test.js', function() {
         env: {DUSTIN_LOCATION: 'Belo Horizonte, MG'},
         firedBy:'schedule',
       });
-    });
-
-    test('firing a real task that sets its own taskGroupId works', async function() {
-      let hook = _.cloneDeep(defaultHook);
-      hook.task.then.taskGroupId = taskcluster.slugid();
-      await helper.Hook.create(hook);
-      let taskId = taskcluster.slugid();
-      let resp = await creator.fire(hook, {}, {taskId});
-
-      const task = await fetchFiredTask(taskId);
-      assume(task.taskGroupId).equals(hook.task.then.taskGroupId + 'xyz');
     });
 
     test('adds a taskId if one is not specified', async function() {
