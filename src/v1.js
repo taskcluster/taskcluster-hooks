@@ -430,12 +430,22 @@ api.declare({
 
   if (resp) {
     return res.reply(resp);
-  } else if (error.requestInfo && error.code) {
-    // handle errors from further API calls specially
+  } else if (error.body && error.body.requestInfo) {
+    // handle errors from createTask specially (since they are usually about scopes)
+    if (error.body.requestInfo.method === 'createTask' && error.body.code === 'InsufficientScopes') {
+      return res.reportError(
+        'InsufficientScopes',
+        `The role \`hook-id:${hookGroupId}/${hookId}\` does not have sufficient scopes ` +
+        `to create the task:\n\n${error.body.message}`,
+        {createTask: error.body.requestInfo});
+    }
     return res.reportError(
       'InputError',
-      `While calling queue.createTask: ${error.code}\n\n${error.message}`,
-      {createTask: error.requestInfo});
+      'While calling {{method}}: {{code}}\n\n{{message}}', {
+        code: error.body.code,
+        method: error.body.requestInfo.method,
+        message: error.body.message,
+      });
   } else {
     return res.reportError(
       'InputError',
