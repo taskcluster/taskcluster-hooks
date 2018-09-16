@@ -36,7 +36,7 @@ const builder = new APIBuilder({
     hookGroupId: /^[a-zA-Z0-9-_]{1,64}$/,
     hookId: /^[a-zA-Z0-9-_\/]{1,64}$/,
   },
-  context: ['Hook', 'taskcreator'],
+  context: ['Hook', 'taskcreator', 'publisher'],
 });
 
 module.exports = builder;
