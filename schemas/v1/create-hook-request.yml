@@ -19,8 +19,6 @@ properties:
           type:           string
         routingKeyPattern:
           type:           string
-        routingKeyReference:
-          type:           string
       additionalProperties:     false
       required:
         - exchange

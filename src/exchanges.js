@@ -2,21 +2,21 @@ let Exchanges = require('pulse-publisher');
 
 /** Declaration of exchanges used by hooks  */
 let exchanges = new Exchanges({
-  title:       'Exchnages to manage hooks',
+  title:       'Exchanges to manage hooks',
   projectName: 'taskcluster-hooks',
   serviceName: 'hooks',
   version: 'v1',
   description: [
-    'Hooks are responsible for creating tasks',
-    'at specific times or in response to webhooks and API calls.',
-    'Using this exchange allows us to make hooks which',
-    'repsond to particular pulse messages.',
+    'The hooks service, typically available at `hooks.taskcluster.net`',
+    'is responsible for creating tasks at specific times or in .',
+    'response to webhooks and API calls.Using this exchange allows us',
+    'to make hooks which repsond to particular pulse messages',
     '',
-    'For each of the exchanges defined below,',
-    'there is a listener which creates ,updates or deletes',
-    'a hook. Basically it creates another listener,',
-    'with the neccessary bindings, which creates the task',
-    'for every message it receives.',
+    'These exchanges provide notifications when a hook is created, updated',
+    'or deleted. This is so that the listener running in a different hooks ',
+    'process at the other end can direct another listener specified by', 
+    '`hookGroupId` and `hookId` to synchronize its bindings. But you are of',
+    'course welcome to use these for other purposes, monitoring changes for example.',
   ].join(''),
 });
 
