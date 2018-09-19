@@ -6,6 +6,7 @@ const builder = require('../src/v1');
 const load = require('../src/main');
 const config = require('typed-env-config');
 const _ = require('lodash');
+const libUrls = require('taskcluster-lib-urls');
 
 const helper = module.exports = {};
 
@@ -22,7 +23,7 @@ helper.secrets = new Secrets({
     taskcluster: [
       {env: 'TASKCLUSTER_CLIENT_ID', cfg: 'taskcluster.credentials.clientId', name: 'clientId'},
       {env: 'TASKCLUSTER_ACCESS_TOKEN', cfg: 'taskcluster.credentials.accessToken', name: 'accessToken'},
-      {env: 'TASKCLUSTER_ROOT_URL', cfg: 'taskcluster.rootUrl', name: 'rootUrl'},
+      {env: 'TASKCLUSTER_ROOT_URL', cfg: 'taskcluster.rootUrl', name: 'rootUrl', mock: libUrls.testRootUrl()},
     ],
   },
 });
