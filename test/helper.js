@@ -84,6 +84,54 @@ helper.withTaskCreator = function(mock, skipping) {
 };
 
 /**
+ * Set up PulsePublisher in fake mode, at helper.publisher. Messages are stored
+ * in helper.messages.  The `helper.checkNextMessage` function allows asserting the
+ * content of the next message, and `helper.checkNoNextMessage` is an assertion that
+ * no such message is in the queue.
+ */
+helper.withPulse = (mock, skipping) => {
+  suiteSetup(async function() {
+    if (skipping()) {
+      return;
+    }
+
+    await helper.load('cfg');
+    helper.load.cfg('pulse', {fake: true});
+    helper.publisher = await helper.load('publisher');
+
+    helper.checkNextMessage = (exchange, check) => {
+      for (let i = 0; i < helper.messages.length; i++) {
+        const message = helper.messages[i];
+        // skip messages for other exchanges; this allows us to ignore
+        // ordering of messages that occur in indeterminate order
+        if (!message.exchange.endsWith(exchange)) {
+          continue;
+        }
+        check && check(message);
+        helper.messages.splice(i, 1); // delete message from queue
+        return;
+      }
+      throw new Error(`No messages found on exchange ${exchange}; ` +
+        `message exchanges: ${JSON.stringify(helper.messages.map(m => m.exchange))}`);
+    };
+
+    helper.checkNoNextMessage = exchange => {
+      assert(!helper.messages.some(m => m.exchange.endsWith(exchange)));
+    };
+  });
+
+  const fakePublish = msg => { helper.messages.push(msg); };
+  setup(function() {
+    helper.messages = [];
+    helper.publisher.on('fakePublish', fakePublish);
+  });
+
+  suiteTeardown(async function() {
+    helper.publisher.removeListener('fakePublish', fakePublish);
+  });
+};
+
+/**
  * Set up an API server.  Call this after withHook, so the server
  * uses the same Hook class.
  *
@@ -136,47 +184,5 @@ helper.withServer = (mock, skipping) => {
       await webServer.terminate();
       webServer = null;
     }
-  });
-};
-
-helper.withPulse = (mock, skipping) => {
-  suiteSetup(async function() {
-    if (skipping()) {
-      return;
-    }
-
-    await helper.load('cfg');
-    helper.load.cfg('pulse', {fake: true});
-    helper.publisher = await helper.load('publisher');
-
-    helper.checkNextMessage = (exchange, check) => {
-      for (let i = 0; i < helper.messages.length; i++) {
-        const message = helper.messages[i];
-        // skip messages for other exchanges; this allows us to ignore
-        // ordering of messages that occur in indeterminate order
-        if (!message.exchange.endsWith(exchange)) {
-          continue;
-        }
-        check && check(message);
-        helper.messages.splice(i, 1); // delete message from queue
-        return;
-      }
-      throw new Error(`No messages found on exchange ${exchange}; ` +
-        `message exchanges: ${JSON.stringify(helper.messages.map(m => m.exchange))}`);
-    };
-
-    helper.checkNoNextMessage = exchange => {
-      assert(!helper.messages.some(m => m.exchange.endsWith(exchange)));
-    };
-  });
-
-  const fakePublish = msg => { helper.messages.push(msg); };
-  setup(function() {
-    helper.messages = [];
-    helper.publisher.on('fakePublish', fakePublish);
-  });
-
-  suiteTeardown(async function() {
-    helper.publisher.removeListener('fakePublish', fakePublish);
   });
 };
