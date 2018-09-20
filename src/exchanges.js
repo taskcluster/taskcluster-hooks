@@ -39,7 +39,6 @@ var buildCommonRoutingKey = (options) => {
 
 /** Build an AMQP compatible message from a message */
 var commonMessageBuilder = function(message) {
-  message.version = 1;
   return message;
 };
 
