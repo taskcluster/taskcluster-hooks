@@ -16,7 +16,11 @@ const monitor = require('taskcluster-lib-monitor');
 const taskcluster = require('taskcluster-client');
 const {sasCredentials} = require('taskcluster-lib-azure');
 const exchanges = require('./exchanges');
+<<<<<<< 12d44760d8bbedf0f51dd60f6098a1b95a272090
 const libPulse = require('taskcluster-lib-pulse');
+=======
+const PulseClient = require('./listeners');
+>>>>>>> Add listeners component
 
 // Create component loader
 const load = loader({
@@ -137,6 +141,19 @@ const load = loader({
       aws: cfg.aws.validator,
       monitor,
     }),
+  },
+
+  listeners: {
+    requires: ['cfg', 'Hook', 'taskcreator'],
+    setup: async ({cfg, Hook, taskcreator}) => {
+      let client = new PulseClient({
+        Hook,
+        taskcreator,
+        credentials: cfg.pulse,
+      });
+      await client.setup();
+      return client;
+    },
   },
 
   docs: {
