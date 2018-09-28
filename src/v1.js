@@ -204,10 +204,13 @@ builder.declare({
         '{{message}} in {{schedElement}}', {message: err.message, schedElement});
     }
   }
-
+  
   //handle an invalid schema
-  if (!ajv.validateSchema(hookDef.triggerSchema)) {
-    return res.reportError('InputError', 'Invalid Schema', {});
+  let valid = ajv.validateSchema(hookDef.triggerSchema);
+  if (!valid) {
+    return res.reportError('InputError', '{{message}}', {
+      message: ajv.errorsText(ajv.errors, {separator: '; '}),
+    });
   }
 
   // Try to create a Hook entity
@@ -281,8 +284,11 @@ builder.declare({
   }
 
   //handle an invalid schema
-  if (!ajv.validateSchema(hookDef.triggerSchema)) {
-    return res.reportError('InputError', 'Invalid Schema', {});
+  let valid = ajv.validateSchema(hookDef.triggerSchema);
+  if (!valid) {
+    return res.reportError('InputError', '{{message}}', {
+      message: ajv.errorsText(ajv.errors, {separator: '; '}),
+    });
   }
 
   // Attempt to modify properties of the hook
