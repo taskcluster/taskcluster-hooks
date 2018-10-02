@@ -39,8 +39,6 @@ const builder = new APIBuilder({
   context: ['Hook', 'LastFire', 'taskcreator', 'publisher'],
 });
 
-module.exports = {builder, triggerHookCommon};
-
 /** Get hook groups **/
 builder.declare({
   method:       'get',
@@ -587,3 +585,4 @@ builder.declare({
   }
   return res.reply({lastFires: lastFires});
 });
+module.exports = {builder, triggerHookCommon};

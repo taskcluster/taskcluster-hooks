@@ -161,7 +161,7 @@ const load = loader({
       let client = new HookListeners({
         Hook,
         taskcreator,
-        client: pulseclient,
+        client: new pulse.FakeClient(),
       });
       await client.setup();
       return client;
