@@ -489,8 +489,12 @@ helper.secrets.mockSuite('api_test.js', ['taskcluster'], function(mock, skipping
           additionalProperties: true,
         },
       }, hookDef);
-      await helper.hooks.createHook('foo', 'bar', nHookDef).then(() => { throw new Error('Expected an error'); },
-        (err) => { debug('Got expected error: %s', err); assert(/should be/.test(err.message)); });
+      await helper.hooks.createHook('foo', 'bar', nHookDef).then(
+        () => { throw new Error('Expected an error'); },
+        (err) => {
+          debug('Got expected error: %s', err);
+          assert(/should be/.test(err.message));
+        });
     });
 
     test('handle an invalid schema - updateHook', async () => {
@@ -511,8 +515,12 @@ helper.secrets.mockSuite('api_test.js', ['taskcluster'], function(mock, skipping
         },
       }, hookDef);
       await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema);
-      await helper.hooks.updateHook('foo', 'bar', nHookDef).then(() => { throw new Error('Expected an error'); },
-        (err) => { debug('Got expected error: %s', err); assert(/should be/.test(err.message)); });
+      await helper.hooks.updateHook('foo', 'bar', nHookDef).then(
+        () => { throw new Error('Expected an error'); },
+        (err) => {
+          debug('Got expected error: %s', err);
+          assert(/should be/.test(err.message));
+        });
     });
   });
 

@@ -216,7 +216,7 @@ builder.declare({
     }
 
     return res.reportError('InputError', '{{message}}', {
-      message: errors.join('\n'),
+      message: 'triggerSchema is not a valid JSON schema:\n' + errors.join('\n'),
     });
   }
 
@@ -301,7 +301,7 @@ builder.declare({
     }
 
     return res.reportError('InputError', '{{message}}', {
-      message: errors.join('\n'),
+      message: 'triggerSchema is not a valid JSON schema:\n' + errors.join('\n'),
     });
   }
 
