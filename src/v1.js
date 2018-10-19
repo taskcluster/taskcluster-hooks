@@ -205,11 +205,18 @@ builder.declare({
     }
   }
   
-  //handle an invalid schema
+  // Handle an invalid schema
   let valid = ajv.validateSchema(hookDef.triggerSchema);
   if (!valid) {
+    
+    const errors = [];
+
+    for (let index = 0; index < ajv.errors.length; index++) {
+      errors.push(' * Property '+ ajv.errors[index].dataPath + ' ' + ajv.errors[index].message);
+    }
+
     return res.reportError('InputError', '{{message}}', {
-      message: ajv.errorsText(ajv.errors, {separator: '; '}),
+      message: errors.join('\n'),
     });
   }
 
@@ -283,11 +290,17 @@ builder.declare({
     return res.reportError('ResourceNotFound', 'No such hook', {});
   }
 
-  //handle an invalid schema
+  //Handle an invalid schema
   let valid = ajv.validateSchema(hookDef.triggerSchema);
   if (!valid) {
+    const errors = [];
+
+    for (let index = 0; index < ajv.errors.length; index++) {
+      errors.push(' * Property '+ ajv.errors[index].dataPath + ' ' + ajv.errors[index].message);
+    }
+
     return res.reportError('InputError', '{{message}}', {
-      message: ajv.errorsText(ajv.errors, {separator: '; '}),
+      message: errors.join('\n'),
     });
   }
 
