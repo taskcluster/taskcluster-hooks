@@ -289,9 +289,10 @@ builder.declare({
   if (!hook) {
     return res.reportError('ResourceNotFound', 'No such hook', {});
   }
-
-  //Handle an invalid schema
+  
+  //Handle an invalid schema 
   let valid = ajv.validateSchema(hookDef.triggerSchema);
+  
   if (!valid) {
     const errors = [];
 
