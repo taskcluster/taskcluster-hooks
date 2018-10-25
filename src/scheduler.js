@@ -36,6 +36,7 @@ class Scheduler extends events.EventEmitter {
       'Expected pollingDelay to be a number');
     // Store options on this for use in event handlers
     this.Hook         = options.Hook;
+    this.LastFire     = options.LastFire;
     this.taskcreator  = options.taskcreator;
     this.notify          = options.notify;
     this.pollingDelay = options.pollingDelay;
@@ -112,6 +113,18 @@ class Scheduler extends events.EventEmitter {
         taskId: hook.nextTaskId,
         time: new Date(),
       };
+
+      try {
+        await this.LastFire.create({
+          hookGroupId: hook.hookGroupId,
+          hookId: hook.hookId,
+          taskId: lastFire.taskId,
+          taskCreateTime: lastFire.time,
+        });
+      } catch (err) {
+        debug('Failed to append lastfire with err: %s', err);
+      }
+
     } catch (err) {
       debug('Failed to handle hook: %s/%s, with err: %s', hook.hookGroupId, hook.hookId, err);
 
@@ -170,19 +183,13 @@ class Scheduler extends events.EventEmitter {
       subject: `[Taskcluster Hooks] Scheduled Hook failure: ${hook.hookGroupId}/${hook.hookId}`,
       content: `The hooks service was unable to create a task for hook ${hook.hookGroupId}/${hook.hookId},
   for which you are listed as owner.
-
   The error was:
     ${err}
-
   Details:
-
     ${errJson}
-
   The service will try again to create the task on the next iteration.
-
   Thanks,
   TaskCluster Automation
-
   P.S. If you believe you have received this email in error, please hit reply to let us know.`,
 
     };

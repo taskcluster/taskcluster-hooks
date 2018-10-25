@@ -1,4 +1,5 @@
 const data = require('./data');
+const lastFire = require('./lastFire');
 const debug = require('debug')('hooks:bin:server');
 const path = require('path');
 const Promise = require('promise');
@@ -45,6 +46,24 @@ const load = loader({
         credentials: sasCredentials({
           accountId: cfg.azure.accountId,
           tableName: cfg.app.hookTableName,
+          rootUrl: cfg.taskcluster.rootUrl,
+          credentials: cfg.taskcluster.credentials,
+        }),
+        cryptoKey: cfg.azure.cryptoKey,
+        signingKey: cfg.azure.signingKey,
+      });
+    },
+  },
+
+  LastFire : {
+    requires: ['cfg', 'monitor'],
+    setup: ({cfg, monitor}) => {
+      return lastFire.LastFire.setup({
+        tableName: cfg.app.lastFireTableName,
+        monitor: monitor.prefix('table.lastFireTable'),
+        credentials: sasCredentials({
+          accountId: cfg.azure.accountId,
+          tableName: cfg.app.lastFireTableName,
           rootUrl: cfg.taskcluster.rootUrl,
           credentials: cfg.taskcluster.credentials,
         }),
@@ -136,10 +155,11 @@ const load = loader({
   },
 
   schedulerNoStart: {
-    requires: ['cfg', 'Hook', 'taskcreator', 'notify'],
-    setup: ({cfg, Hook, taskcreator, notify}) => {
+    requires: ['cfg', 'Hook', 'LastFire', 'taskcreator', 'notify'],
+    setup: ({cfg, Hook, LastFire, taskcreator, notify}) => {
       return new Scheduler({
         Hook,
+        LastFire,
         taskcreator,
         notify,
         pollingDelay: cfg.app.scheduler.pollingDelay,
