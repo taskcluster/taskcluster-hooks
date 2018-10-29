@@ -86,13 +86,9 @@ helper.withTaskCreator = function(mock, skipping) {
 };
 
 /**
- * Set up PulsePublisher in fake mode, at helper.publisher. Messages are stored
  * Set up tc-lib-pulse in fake mode, with a publisher at at helper.publisher.
- * in helper.messages.  The `helper.checkNextMessage` function allows asserting the
  * Messages are stored in helper.messages.  The `helper.checkNextMessage`
- * content of the next message, and `helper.checkNoNextMessage` is an assertion that
  * function allows asserting the content of the next message, and
- * no such message is in the queue.
  * `helper.checkNoNextMessage` is an assertion that no such message is in the
  * queue.
  */
