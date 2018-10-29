@@ -7,6 +7,7 @@ const load = require('../src/main');
 const config = require('typed-env-config');
 const _ = require('lodash');
 const libUrls = require('taskcluster-lib-urls');
+const {FakeClient} = require('taskcluster-lib-pulse');
 
 const helper = module.exports = {};
 
@@ -86,9 +87,14 @@ helper.withTaskCreator = function(mock, skipping) {
 
 /**
  * Set up PulsePublisher in fake mode, at helper.publisher. Messages are stored
+ * Set up tc-lib-pulse in fake mode, with a publisher at at helper.publisher.
  * in helper.messages.  The `helper.checkNextMessage` function allows asserting the
+ * Messages are stored in helper.messages.  The `helper.checkNextMessage`
  * content of the next message, and `helper.checkNoNextMessage` is an assertion that
+ * function allows asserting the content of the next message, and
  * no such message is in the queue.
+ * `helper.checkNoNextMessage` is an assertion that no such message is in the
+ * queue.
  */
 helper.withPulse = (mock, skipping) => {
   suiteSetup(async function() {
@@ -96,8 +102,9 @@ helper.withPulse = (mock, skipping) => {
       return;
     }
 
+    helper.load.inject('pulseClient', new FakeClient());
+
     await helper.load('cfg');
-    helper.load.cfg('pulse', {fake: true});
     helper.publisher = await helper.load('publisher');
 
     helper.checkNextMessage = (exchange, check) => {
@@ -121,14 +128,14 @@ helper.withPulse = (mock, skipping) => {
     };
   });
 
-  const fakePublish = msg => { helper.messages.push(msg); };
+  const recordMessage = msg => helper.messages.push(msg);
   setup(function() {
     helper.messages = [];
-    helper.publisher.on('fakePublish', fakePublish);
+    helper.publisher.on('message', recordMessage);
   });
 
   suiteTeardown(async function() {
-    helper.publisher.removeListener('fakePublish', fakePublish);
+    helper.publisher.removeListener('message', recordMessage);
   });
 };
 
