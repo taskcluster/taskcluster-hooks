@@ -70,7 +70,7 @@ const load = loader({
     requires: ['cfg', 'monitor'],
     setup: ({cfg, monitor}) => {
       return new libPulse.Client({
-        namespace: 'taskcluster-auth',
+        namespace: 'taskcluster-hooks',
         monitor,
         credentials: libPulse.pulseCredentials(cfg.pulse),
       });
@@ -84,7 +84,7 @@ const load = loader({
       client:             pulseClient,
       credentials:        cfg.pulse,
       schemaset,
-      namespace:          'taskcluster-auth',
+      namespace:          'taskcluster-hooks',
       publish:            cfg.app.publishMetaData,
       validator:          await schemaset.validator(cfg.taskcluster.rootUrl),
       aws:                cfg.aws.validator,
