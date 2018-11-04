@@ -1,5 +1,4 @@
 const data = require('./data');
-const lastFire = require('./lastFire');
 const debug = require('debug')('hooks:bin:server');
 const path = require('path');
 const Promise = require('promise');
@@ -58,7 +57,7 @@ const load = loader({
   LastFire : {
     requires: ['cfg', 'monitor'],
     setup: ({cfg, monitor}) => {
-      return lastFire.LastFire.setup({
+      return data.LastFire.setup({
         tableName: cfg.app.lastFireTableName,
         monitor: monitor.prefix('table.lastFireTable'),
         credentials: sasCredentials({
@@ -97,8 +96,12 @@ const load = loader({
   },
 
   taskcreator: {
-    requires: ['cfg'],
-    setup: ({cfg}) => new taskcreator.TaskCreator(cfg.taskcluster),
+    requires: ['cfg', 'LastFire', 'monitor'],
+    setup: ({cfg, LastFire, monitor}) => new taskcreator.TaskCreator({
+      ...cfg.taskcluster, 
+      LastFire, 
+      monitor:  monitor.prefix('taskcreator'),
+    }),
   },
 
   notify: {
@@ -155,13 +158,13 @@ const load = loader({
   },
 
   schedulerNoStart: {
-    requires: ['cfg', 'Hook', 'LastFire', 'taskcreator', 'notify'],
-    setup: ({cfg, Hook, LastFire, taskcreator, notify}) => {
+    requires: ['cfg', 'Hook', 'taskcreator', 'notify', 'monitor'],
+    setup: ({cfg, Hook, taskcreator, notify, monitor}) => {
       return new Scheduler({
         Hook,
-        LastFire,
         taskcreator,
         notify,
+        monitor: monitor.prefix('scheduler'),
         pollingDelay: cfg.app.scheduler.pollingDelay,
       });
     },
