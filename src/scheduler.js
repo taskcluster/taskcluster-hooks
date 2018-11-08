@@ -170,14 +170,19 @@ class Scheduler extends events.EventEmitter {
       subject: `[Taskcluster Hooks] Scheduled Hook failure: ${hook.hookGroupId}/${hook.hookId}`,
       content: `The hooks service was unable to create a task for hook ${hook.hookGroupId}/${hook.hookId},
   for which you are listed as owner.
+
   The error was:
     ${err}
+
   Details:
+
     ${errJson}
+
   The service will try again to create the task on the next iteration.
+
   Thanks,
   TaskCluster Automation
-  
+
   P.S. If you believe you have received this email in error, please hit reply to let us know.`,
 
     };
@@ -186,3 +191,4 @@ class Scheduler extends events.EventEmitter {
 
 // Export Scheduler
 module.exports = Scheduler;
+
