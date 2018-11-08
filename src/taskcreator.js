@@ -22,6 +22,7 @@ class TaskCreator {
     this.rootUrl = options.rootUrl;
     this.credentials = options.credentials;
     this.LastFire = options.LastFire;
+    this.monitor = options.monitor;
   }
 
   taskForHook(hook, context, options) {
