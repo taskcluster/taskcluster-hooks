@@ -111,7 +111,7 @@ class TaskCreator {
     }
 
     try {
-      await appendLastFire(hook, context, lastFire);
+      await this.appendLastFire(hook, context, lastFire);
     } catch (err) {
       debug('Failed to append lastfire with err: %s', err);
       this.monitor.reportError(err);
