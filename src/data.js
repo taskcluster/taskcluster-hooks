@@ -181,7 +181,7 @@ exports.Hook = Hook;
 const LastFire = Entity.configure({
   version:              1,
   partitionKey:         Entity.keys.StringKey('hookGroupId'),
-  rowKey:               Entity.keys.ConstantKey('task-record'),
+  rowKey:               Entity.keys.StringKey('taskCreateTime'),
   signEntities:         true,
   properties:           {
     hookGroupId:        Entity.types.String,

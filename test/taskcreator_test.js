@@ -219,7 +219,7 @@ suite('taskcreator_test.js', function() {
 
       const res = await helper.LastFire.load({
         hookGroupId: hook.hookGroupId,
-        firedBy: 'test',
+        taskCreateTime,
       });
       assume(res.taskCreateTime.toString()).equals(taskCreateTime.toString());
     });
