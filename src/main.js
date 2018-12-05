@@ -141,9 +141,28 @@ const load = loader({
     }),
   },
 
+  Queues: {
+    requires: ['cfg', 'process', 'monitor'],
+    setup: ({cfg, process, monitor}) => {
+      return data.Queues.setup({
+        tableName: cfg.app.queuesTableName,
+        monitor: monitor.prefix('table.queues'),
+        credentials: sasCredentials({
+          accountId: cfg.azure.accountId,
+          tableName: cfg.app.queuesTableName,
+          rootUrl: cfg.taskcluster.rootUrl,
+          credentials: cfg.taskcluster.credentials,
+        }),
+        //cryptoKey: cfg.azure.cryptoKey,
+        signingKey: cfg.azure.signingKey,
+      });
+    },
+  },
+
   pulseclient: {
     requires: ['cfg', 'monitor'],
     setup: async ({cfg, monitor}) => {
+      let pulse_creds = cfg.pulse;
       let credentials = pulse.pulseCredentials({
         ...cfg.pulse,
       });
@@ -156,12 +175,13 @@ const load = loader({
   },
 
   listeners: {
-    requires: ['Hook', 'taskcreator', 'pulseclient'],
-    setup: async ({Hook, taskcreator, pulseclient}) => {
+    requires: ['Hook', 'taskcreator', 'Queues', 'pulseclient'],
+    setup: async ({Hook, taskcreator, Queues, pulseclient}) => {
       let client = new HookListeners({
         Hook,
+        Queues,
         taskcreator,
-        client: new pulse.FakeClient(),
+        client: pulseclient,
       });
       await client.setup();
       return client;

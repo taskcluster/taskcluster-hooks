@@ -2,6 +2,8 @@ const assert = require('assert');
 const debug = require('debug')('listeners');
 const pulse = require('taskcluster-lib-pulse');
 const {triggerHookCommon} = require('./v1');
+const Entity = require('azure-entities');
+const _ = require('lodash');
 
 /**
  * Create pulse client and consumers to trigger hooks with pulse messages 
@@ -20,6 +22,7 @@ class HookListeners {
 
     this.taskcreator = options.taskcreator;
     this.Hook = options.Hook;
+    this.Queues = options.Queues;
     this.client = options.client;
     this.pulseHookChangedListener = null;
     this.listeners = null;
@@ -34,17 +37,7 @@ class HookListeners {
     debug('Setting up the listeners');
     assert(this.listeners === null, 'Cannot setup twice');
 
-    let handleMessage = async m =>{
-      let message = m.payload;
-      let exchange = m.exchange.split('/').pop();
-      if (exchange == 'hook-created') { 
-        await this.createListener(message); 
-      } else if (exchange == 'hook-updated') {
-        await this.updateListener(message); 
-      } else {
-        await this.deleteListener(message); 
-      }
-    };
+    const reconcileConsumers = this.reconcileConsumers;
 
     const client = this.client;
     let consumer = await pulse.consume({
@@ -61,7 +54,9 @@ class HookListeners {
       }],
       queueName: 'hookChanged',
       maxLength : 50,
-    }, handleMessage
+      //expires : 1800000,
+
+    }, (msg) => this.reconcileConsumers()
     );
     debug('Listening to hook exchanges');
     this.pulseHookChangedListener = consumer;
@@ -69,12 +64,11 @@ class HookListeners {
   }
 
   /** Create a new pulse consumer for a hook */
-  async createListener({hookId, hookGroupId, bindings}) {
+  async createListener({hookId, hookGroupId, bindings}, oldBindings) {
     const hook = await this.Hook.load({hookGroupId, hookId}, true);
     if (hook) {
       let listener = await pulse.consume({
         client,      
-        bindings: bindings,
         queueName: `${hookGroupId}/${hookId}`, // serves as unique id for every listener
         maxLength : 50,
       }, async ({payload}) => {
@@ -90,18 +84,62 @@ class HookListeners {
 
         await triggerHookCommon.call(this, {res, hook, payload, firedBy: 'pulseHook'});
       });
+      for (let {exchange, routingKeyPattern} of oldBindings) {
+        await this.client.withChannel.unbindQueue(queueName, exchange, routingKeyPattern);
+      }
+      for (let {exchange, routingKeyPattern} of bindings) {
+        await this.client.withChannel.bindQueue(queueName, exchange, routingKeyPattern);
+      }
 
       this.listeners.push(listener);
     }
   }
   
-  /** Update the pulse consumer for a hook */
-  async updateListener(message) {
+  async reconcileConsumers() {
+    let Queues = [];
+    let allHooksData = [];
+    console.log('helelo');
+    await this.Queues.scan(
+      {},
+      {
+        limit: 1000,
+        handler:(queue) => Queues.push(queue),
+      }
+    );
+
+    let continuationToken = undefined;
+    
+    do {
+      allHooksData  = await this.Hooks.scan({
+        bindings:   Entity.op.notEqual([]),
+      }, {
+        limit: 1000,
+        continuation: continuationToken,
+      });
+      continuationToken = allHooksData.continuation;
+      allHooksData.entries.forEach(hook => {
+        const {hookGroupId, hookId} = hook;
+        const queue = _.find(Queues, {hookGroupId, hookId});
+        if (queue) {
+          const index = this.listeners.findIndex(({_queueName}) => listener._queueName === queue.queueName);
+          if (index == -1) {
+            this.createListener(hook, queue.bindings);
+          }
+          _.pull(Queues, queue);
+        } else {
+          this.createListener(hook, {});
+        }
+      });
+    } while (continuationToken);
+    
+    // Delete the queues now left in the Queues list.
+    Queues.forEach(async (queue) => {     
+      if (this.client.withChannel.checkQueue(queue.queueName)) {
+        this.client.withChannel.deleteQueue(queue.queueName);
+      }
+    });
   }
 
-  /** Delete the pulse consumer for a hook */
-  async deleteListener(mes) {
-  }
 }
 
 module.exports = HookListeners;

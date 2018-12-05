@@ -60,6 +60,7 @@ test:
     component:        hooks-tests
     hookTableName:    HooksTestTable2
     lastFireTableName: LastFireTestTable
+    queuesTableName:  QueueTestTable
     publishMetaData:  false
     scheduler:
       pollingDelay:   5000

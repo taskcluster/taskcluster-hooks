@@ -175,7 +175,27 @@ Hook.prototype.definition = function() {
   });
 };
 
-// export Hook
+const Queues = Entity.configure({
+  version:              1,
+  partitionKey:         Entity.keys.StringKey('hookGroupId'),
+  rowKey:               Entity.keys.StringKey('hookId'),
+  signEntities:         true,
+  properties:           {
+    hookGroupId:        Entity.types.String,
+    hookId:             Entity.types.String,
+    queueName:          Entity.types.String,
+    bindings:           Entity.types.JSON,
+  },
+});
+
+/** Return promise for queues definition */
+Queues.prototype.definition = function() {
+  return Promise.resolve({
+    hookId:       this.hookId,
+    hookGroupId:  this.hookGroupId,
+  });
+};
+// export Hook and Queues
 exports.Hook = Hook;
 
 const LastFire = Entity.configure({
@@ -208,3 +228,4 @@ LastFire.prototype.definition = function() {
 
 // export LastFire
 exports.LastFire = LastFire;
+exports.Queues = Queues;
