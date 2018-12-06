@@ -48,15 +48,15 @@ class TaskCreator {
     return task;
   }
 
-  async appendLastFire({hookGroupId, hookId}, {firedBy}, lastFire) {
+  async appendLastFire({hookGroupId, hookId, taskId, taskCreateTime, firedBy, result, error}) {
     await this.LastFire.create({
       hookGroupId,
       hookId,
-      taskId: lastFire.taskId,
-      taskCreateTime: lastFire.time,
+      taskCreateTime,
+      taskId,
       firedBy,
-      result: lastFire.result,
-      error:  lastFire.err || '',
+      result,
+      error,
     });
   } 
 
@@ -99,7 +99,7 @@ class TaskCreator {
       taskCreateRes = await queue.createTask(options.taskId, task);
       lastFire = {
         result: 'success',
-        taskId: hook.nextTaskId,
+        taskId: options.taskId,
         time: new Date(),
       };
     } catch (err) {
@@ -111,7 +111,15 @@ class TaskCreator {
     }
 
     try {
-      await this.appendLastFire(hook, context, lastFire);
+      await this.appendLastFire({
+        hookGroupId: hook.hookGroupId,
+        taskCreateTime: lastFire.time, 
+        hookId: hook.hookId,
+        firedBy: context.firedBy,
+        taskId: lastFire.taskId,
+        result: lastFire.result,
+        error: lastFire.error || '',
+      });
     } catch (err) {
       debug('Failed to append lastfire with err: %s', err);
       this.monitor.reportError(err);

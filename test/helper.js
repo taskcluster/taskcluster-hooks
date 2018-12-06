@@ -68,13 +68,11 @@ helper.withLastFire = (mock, skipping) => {
     if (skipping()) {
       return;
     }
-
     if (mock) {
       const cfg = await helper.load('cfg');
       helper.load.inject('LastFire', data.LastFire.setup({
         tableName: cfg.app.lastFireTableName,
         credentials: 'inMemory',
-        cryptoKey: cfg.azure.cryptoKey,
         signingKey: cfg.azure.signingKey,
       }));
     }

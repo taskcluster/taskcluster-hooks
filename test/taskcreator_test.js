@@ -82,6 +82,51 @@ suite('taskcreator_test.js', function() {
       },
     };
 
+    const defaultHook2 = {
+      hookGroupId:        'tc-hooks-tests',
+      hookId:             'tc-test-hook2',
+      metadata:           {},
+      bindings:           [],
+      schedule:           {format: {type: 'none'}},
+      triggerToken:       taskcluster.slugid(),
+      lastFire:           {},
+      nextTaskId:         taskcluster.slugid(),
+      nextScheduledDate:  new Date(2000, 0, 0, 0, 0, 0, 0),
+      triggerSchema:      {
+        type: 'object',
+        properties: {
+          location: {
+            type: 'string',
+            default: 'Niskayuna, NY',
+          },
+          otherVariable: {
+            type: 'integer',
+            default: '12',
+          },
+        },
+        additionalProperties: false,
+      },
+      task:               {
+        // use a JSON-e construct at the top level to double-check that this is a
+        // JSON-e template and not treated as a task definition
+        $if: 'true',
+        then: {
+          provisionerId: 'no-provisioner',
+          workerType: 'test-worker',
+          created: {$fromNow: '0 minutes'},
+          deadline: {$fromNow: '1 minutes'},
+          expires: {$fromNow: '2 minutes'},
+          metadata: {
+            name: 'test task',
+            description: 'task created by tc-hooks tests',
+            owner: 'taskcluster@mozilla.com',
+            source: 'http://taskcluster.net',
+          },
+          payload: {},
+        },
+      },
+    };
+
     const createTestHook = async function(scopes, extra) {
       let hook = _.cloneDeep(defaultHook);
       hook.task.then.extra = extra;
@@ -212,16 +257,67 @@ suite('taskcreator_test.js', function() {
     test('adds a new row to lastFire', async function() {
       let hook = _.cloneDeep(defaultHook);
       let taskCreateTime = new Date();
-      await creator.appendLastFire(hook, 
-        {firedBy: 'test'}, 
-        {result: 'success', taskId: hook.nextTaskId, time: taskCreateTime},
+      await creator.appendLastFire({
+        hookId: hook.hookId,
+        hookGroupId: hook.hookGroupId,
+        firedBy: 'test', 
+        result: 'success', 
+        taskId: hook.nextTaskId,
+        taskCreateTime,
+        result: 'success',
+        error: '',
+      }
       );
 
       const res = await helper.LastFire.load({
         hookGroupId: hook.hookGroupId,
-        taskCreateTime,
+        hookId: hook.hookId,
+        taskId:  hook.nextTaskId,
       });
-      assume(res.taskCreateTime.toString()).equals(taskCreateTime.toString());
+      assume(res.taskId).equals(hook.nextTaskId);
+    });
+
+    test('Fetch two appended lastFire rows independently', async function() {
+      let hook = _.cloneDeep(defaultHook);
+      let hook2 = _.cloneDeep(defaultHook2);
+      let taskCreateTime = new Date();
+      Promise.all(
+        creator.appendLastFire({
+          hookId: hook.hookId,
+          hookGroupId: hook.hookGroupId,
+          firedBy: 'test', 
+          result: 'success', 
+          taskId: hook.nextTaskId,
+          taskCreateTime,
+          result: 'success',
+          error: '',
+        }
+        ),
+        creator.appendLastFire({
+          hookId: hook2.hookId,
+          hookGroupId: hook2.hookGroupId,
+          firedBy: 'test', 
+          result: 'success', 
+          taskId: hook2.nextTaskId,
+          taskCreateTime,
+          result: 'success',
+          error: '',
+        }
+        )).catch(() => {});
+
+      const res = await helper.LastFire.load({
+        hookGroupId: hook.hookGroupId,
+        hookId: hook.hookId,
+        taskId:  hook.nextTaskId,
+      });
+
+      const res2 = await helper.LastFire.load({
+        hookGroupId: hook2.hookGroupId,
+        hookId: hook2.hookId,
+        taskId:  hook2.nextTaskId,
+      });
+
+      assume(res.taskId).not.equals(res2.taskId);
     });
   });
 

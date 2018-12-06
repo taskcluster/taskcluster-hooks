@@ -66,7 +66,6 @@ const load = loader({
           rootUrl: cfg.taskcluster.rootUrl,
           credentials: cfg.taskcluster.credentials,
         }),
-        cryptoKey: cfg.azure.cryptoKey,
         signingKey: cfg.azure.signingKey,
       });
     },

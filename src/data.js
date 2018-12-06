@@ -180,14 +180,14 @@ exports.Hook = Hook;
 
 const LastFire = Entity.configure({
   version:              1,
-  partitionKey:         Entity.keys.StringKey('hookGroupId'),
-  rowKey:               Entity.keys.StringKey('taskCreateTime'),
+  partitionKey:         Entity.keys.StringKey('hookGroupId', 'hookId'),
+  rowKey:               Entity.keys.StringKey('taskId'),
   signEntities:         true,
   properties:           {
     hookGroupId:        Entity.types.String,
     hookId:             Entity.types.String,
     firedBy:            Entity.types.String,
-    taskId:             Entity.types.EncryptedText,
+    taskId:             Entity.types.String,
     taskCreateTime:     Entity.types.Date,
     result:             Entity.types.String,
     error:              Entity.types.String,
@@ -197,7 +197,7 @@ const LastFire = Entity.configure({
 LastFire.prototype.definition = function() {
   return Promise.resolve({
     hookGroupId:  this.hookGroupId,
-    hookId: this.hook,
+    hookId: this.hookId,
   });
 };
 
