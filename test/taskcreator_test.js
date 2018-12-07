@@ -281,7 +281,7 @@ suite('taskcreator_test.js', function() {
       let hook = _.cloneDeep(defaultHook);
       let hook2 = _.cloneDeep(defaultHook2);
       let taskCreateTime = new Date();
-      await Promise.all(
+      await Promise.all([
         creator.appendLastFire({
           hookId: hook.hookId,
           hookGroupId: hook.hookGroupId,
@@ -303,7 +303,7 @@ suite('taskcreator_test.js', function() {
           result: 'success',
           error: '',
         }
-        )).catch(() => {});
+        )]).catch(() => {});
 
       const res = await helper.LastFire.load({
         hookGroupId: hook.hookGroupId,
