@@ -162,13 +162,9 @@ const load = loader({
   pulseclient: {
     requires: ['cfg', 'monitor'],
     setup: async ({cfg, monitor}) => {
-      let pulse_creds = cfg.pulse;
-      let credentials = pulse.pulseCredentials({
-        ...cfg.pulse,
-      });
       return new pulse.Client({
-        namespace: 'yd_debug',
-        credentials,
+        namespace: cfg.pulse.namespace,
+        credentials: pulse.pulseCredentials(cfg.pulse),
         monitor,
       });
     },
@@ -177,14 +173,14 @@ const load = loader({
   listeners: {
     requires: ['Hook', 'taskcreator', 'Queues', 'pulseclient'],
     setup: async ({Hook, taskcreator, Queues, pulseclient}) => {
-      let client = new HookListeners({
+      let Listener = new HookListeners({
         Hook,
         Queues,
         taskcreator,
         client: pulseclient,
       });
-      await client.setup();
-      return client;
+      await Listener.setup();
+      return Listener;
     },
   },
 
