@@ -201,6 +201,13 @@ assume@^1.2.5, assume@^1.5.2:
     pathval "0.1.x"
     pruddy-error "1.0.x"
 
+async-decorators@^0.1.5:
+  version "0.1.5"
+  resolved "https://registry.yarnpkg.com/async-decorators/-/async-decorators-0.1.5.tgz#23fcbfdd45b668b53d1f4e5ff4b2951552021d95"
+  integrity sha1-I/y/3UW2aLU9H05f9LKVFVICHZU=
+  dependencies:
+    lodash "^3.10.1"
+
 async@^2.4.0:
   version "2.6.0"
   resolved "https://registry.yarnpkg.com/async/-/async-2.6.0.tgz#61a29abb6fcc026fea77e56d1c6ec53a795951f4"
@@ -1780,6 +1787,11 @@ lodash@^4.17.10, lodash@^4.17.5:
   version "4.17.11"
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.11.tgz#b39ea6229ef607ecd89e2c8df12536891cac9b8d"
   integrity sha512-cQKh8igo5QUhZ7lg38DYWAxMvjSAKG0A8wGSVimP07SIUEK2UO+arSRKbRZWtelMtN5V0Hkwh5ryOto/SshYIg==
+
+lodash@^3.10.1:
+  version "3.10.1"
+  resolved "https://registry.yarnpkg.com/lodash/-/lodash-3.10.1.tgz#5bf45e8e49ba4189e17d482789dfd15bd140b7b6"
+  integrity sha1-W/Rejkm6QYnhfUgnid/RW9FAt7Y=
 
 lowercase-keys@^1.0.0:
   version "1.0.0"

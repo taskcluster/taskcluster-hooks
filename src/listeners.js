@@ -1,9 +1,8 @@
 const assert = require('assert');
 const debug = require('debug')('listeners');
 const pulse = require('taskcluster-lib-pulse');
-const {triggerHookCommon} = require('./v1');
-const Entity = require('azure-entities');
 const _ = require('lodash');
+const {serialize} = require('async-decorators');
 
 /**
  * Create pulse client and consumers to trigger hooks with pulse messages 

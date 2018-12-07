@@ -17,6 +17,7 @@
   "dependencies": {
     "ajv": "6.5.1",
     "assume": "^1.2.5",
+    "async-decorators": "^0.1.5",
     "aws-sdk": "^2.164.0",
     "azure-entities": "^5.1.0",
     "cron-parser": "2.4.3",
