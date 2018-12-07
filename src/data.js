@@ -194,12 +194,5 @@ const LastFire = Entity.configure({
   },
 });
 
-LastFire.prototype.definition = function() {
-  return Promise.resolve({
-    hookGroupId:  this.hookGroupId,
-    hookId: this.hookId,
-  });
-};
-
 // export LastFire
 exports.LastFire = LastFire;

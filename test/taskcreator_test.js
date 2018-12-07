@@ -82,51 +82,6 @@ suite('taskcreator_test.js', function() {
       },
     };
 
-    const defaultHook2 = {
-      hookGroupId:        'tc-hooks-tests',
-      hookId:             'tc-test-hook2',
-      metadata:           {},
-      bindings:           [],
-      schedule:           {format: {type: 'none'}},
-      triggerToken:       taskcluster.slugid(),
-      lastFire:           {},
-      nextTaskId:         taskcluster.slugid(),
-      nextScheduledDate:  new Date(2000, 0, 0, 0, 0, 0, 0),
-      triggerSchema:      {
-        type: 'object',
-        properties: {
-          location: {
-            type: 'string',
-            default: 'Niskayuna, NY',
-          },
-          otherVariable: {
-            type: 'integer',
-            default: '12',
-          },
-        },
-        additionalProperties: false,
-      },
-      task:               {
-        // use a JSON-e construct at the top level to double-check that this is a
-        // JSON-e template and not treated as a task definition
-        $if: 'true',
-        then: {
-          provisionerId: 'no-provisioner',
-          workerType: 'test-worker',
-          created: {$fromNow: '0 minutes'},
-          deadline: {$fromNow: '1 minutes'},
-          expires: {$fromNow: '2 minutes'},
-          metadata: {
-            name: 'test task',
-            description: 'task created by tc-hooks tests',
-            owner: 'taskcluster@mozilla.com',
-            source: 'http://taskcluster.net',
-          },
-          payload: {},
-        },
-      },
-    };
-
     const createTestHook = async function(scopes, extra) {
       let hook = _.cloneDeep(defaultHook);
       hook.task.then.extra = extra;
@@ -279,7 +234,10 @@ suite('taskcreator_test.js', function() {
 
     test('Fetch two appended lastFire rows independently', async function() {
       let hook = _.cloneDeep(defaultHook);
-      let hook2 = _.cloneDeep(defaultHook2);
+      let hook2 = _.cloneDeep({...defaultHook, 
+        hookId: 'tc-test-hook2', 
+        nextTaskId: taskcluster.slugid(),
+      });
       let taskCreateTime = new Date();
       await Promise.all([
         creator.appendLastFire({

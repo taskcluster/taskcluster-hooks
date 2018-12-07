@@ -56,7 +56,7 @@ class TaskCreator {
       taskId,
       firedBy,
       result,
-      error,
+      error: error.toString(),
     });
   } 
 
