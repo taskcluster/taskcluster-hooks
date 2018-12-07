@@ -52,8 +52,6 @@ class HookListeners {
       }],
       queueName: 'hookChanged',
       maxLength : 50,
-      //expires : 1800000,
-
     }, (msg) => this.reconcileConsumers()
     );
     debug('Listening to hook exchanges');
@@ -62,7 +60,7 @@ class HookListeners {
   }
 
   /** Create a new pulse consumer for a hook */
-  async createListener(hook, oldBindings) {
+  async createListener({hook, oldBindings}) {
     this.hook = hook;
     const client =  this.client;
     const queueName = `${hook.hookGroupId}/${hook.hookId}`; // serves as unique id for every listener
@@ -86,7 +84,6 @@ class HookListeners {
       }
     }
     this.listeners.push(listener);
-    // console.log(this.listeners);
   }
   
   async reconcileConsumers() {
@@ -115,12 +112,12 @@ class HookListeners {
             const index = this.listeners.findIndex(({_queueName}) => listener._queueName === queue.queueName);
             if (index == -1) {
               debug('Existing queue..creating listener');
-              await this.createListener(hook, queue.bindings);
+              await this.createListener({hook, oldBindings: queue.bindings});
             }
             _.pull(Queues, queue);
           } else {
             debug('New queue..creating listener');
-            await this.createListener(hook, [{}]);
+            await this.createListener({hook, oldBindings: [{}]});
             // Add to Queues table
             debug('adding to Queues table');
             await this.Queues.create({
@@ -143,10 +140,8 @@ class HookListeners {
       }
       // Delete from this.listeners
       let removeIndex = this.listeners.findIndex(({_queueName}) => queue.queueName === _queueName);
-      console.log('index', removeIndex);
       if (removeIndex > -1) {
         const listener = this.listeners[removeIndex];
-        console.log(listener);
         listener.stop();
         this.listeners.splice(removeIndex, 1);
       }
