@@ -168,6 +168,7 @@ Hook.prototype.definition = function() {
   return Promise.resolve({
     hookId:       this.hookId,
     hookGroupId:  this.hookGroupId,
+    bindings:     this.bindings,
     metadata:     _.cloneDeep(this.metadata),
     task:         _.cloneDeep(this.task),
     schedule:     _.cloneDeep(this.schedule),
