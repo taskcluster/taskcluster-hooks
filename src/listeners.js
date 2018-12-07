@@ -37,8 +37,6 @@ class HookListeners {
     debug('Setting up the listeners');
     assert(this.listeners === null, 'Cannot setup twice');
 
-    const reconcileConsumers = this.reconcileConsumers;
-
     const client = this.client;
     let consumer = await pulse.consume({
       client,      
@@ -64,41 +62,36 @@ class HookListeners {
   }
 
   /** Create a new pulse consumer for a hook */
-  async createListener({hookId, hookGroupId, bindings}, oldBindings) {
-    const hook = await this.Hook.load({hookGroupId, hookId}, true);
-    if (hook) {
-      let listener = await pulse.consume({
-        client,      
-        queueName: `${hookGroupId}/${hookId}`, // serves as unique id for every listener
-        maxLength : 50,
-      }, async ({payload}) => {
-        console.log(payload);
-        const hook = this.hook;
-        // Pass empty functions in res which are executed by `triggerHookCommon`
-        // This is more of a hack so that if the payload doesnt validate against
-        // `triggerSchema`,git  we can simply ignore the message.
-        const res = {
-          reply: function() {},
-          reportError: function() {},
-        };
-
-        await triggerHookCommon.call(this, {res, hook, payload, firedBy: 'pulseHook'});
-      });
+  async createListener(hook, oldBindings) {
+    this.hook = hook;
+    const client =  this.client;
+    const queueName = `${hook.hookGroupId}/${hook.hookId}`; // serves as unique id for every listener
+    const listener = await pulse.consume({
+      client,      
+      queueName: queueName, 
+      maxLength : 50,
+    }, async ({payload}) => {
+      const hook = this.hook;
+      // Pass empty functions in res which are executed by `triggerHookCommon`
+      // This is more of a hack so that if the payload doesnt validate against
+      // `triggerSchema`,git  we can simply ignore the message.
+      await this.taskcreator.fire(hook, {firedBy:'pulseMessage', payload});
+    });
+    if (!this.client.isFakeClient) {
       for (let {exchange, routingKeyPattern} of oldBindings) {
-        await this.client.withChannel.unbindQueue(queueName, exchange, routingKeyPattern);
+        await this.client.withChannel(async channel => channel.unbindQueue(queueName, exchange, routingKeyPattern));
       }
-      for (let {exchange, routingKeyPattern} of bindings) {
-        await this.client.withChannel.bindQueue(queueName, exchange, routingKeyPattern);
+      for (let {exchange, routingKeyPattern} of hook.bindings) {
+        await this.client.withChannel(async channel => {channel.bindQueue(queueName, exchange, routingKeyPattern);});
       }
-
-      this.listeners.push(listener);
     }
+    this.listeners.push(listener);
+    // console.log(this.listeners);
   }
   
   async reconcileConsumers() {
     let Queues = [];
     let allHooksData = [];
-    console.log('helelo');
     await this.Queues.scan(
       {},
       {
@@ -106,38 +99,86 @@ class HookListeners {
         handler:(queue) => Queues.push(queue),
       }
     );
-
     let continuationToken = undefined;
     
     do {
-      allHooksData  = await this.Hooks.scan({
-        bindings:   Entity.op.notEqual([]),
-      }, {
+      allHooksData  = await this.Hook.scan({}, {
         limit: 1000,
         continuation: continuationToken,
       });
       continuationToken = allHooksData.continuation;
-      allHooksData.entries.forEach(hook => {
-        const {hookGroupId, hookId} = hook;
-        const queue = _.find(Queues, {hookGroupId, hookId});
-        if (queue) {
-          const index = this.listeners.findIndex(({_queueName}) => listener._queueName === queue.queueName);
-          if (index == -1) {
-            this.createListener(hook, queue.bindings);
+      allHooksData.entries.forEach(async (hook) => {
+        if (hook.bindings != []) {
+          const {hookGroupId, hookId} = hook;
+          const queue = _.find(Queues, {hookGroupId, hookId});
+          if (queue) {
+            const index = this.listeners.findIndex(({_queueName}) => listener._queueName === queue.queueName);
+            if (index == -1) {
+              debug('Existing queue..creating listener');
+              await this.createListener(hook, queue.bindings);
+            }
+            _.pull(Queues, queue);
+          } else {
+            debug('New queue..creating listener');
+            await this.createListener(hook, [{}]);
+            // Add to Queues table
+            debug('adding to Queues table');
+            await this.Queues.create({
+              hookGroupId,
+              hookId,
+              queueName: `${hookGroupId}/${hookId}`,
+              bindings: hook.bindings,
+            });
           }
-          _.pull(Queues, queue);
-        } else {
-          this.createListener(hook, {});
         }
       });
     } while (continuationToken);
     
     // Delete the queues now left in the Queues list.
     Queues.forEach(async (queue) => {     
-      if (this.client.withChannel.checkQueue(queue.queueName)) {
-        this.client.withChannel.deleteQueue(queue.queueName);
+      if (!this.client.isFakeClient) {
+        if (await this.client.withChannel(async channel => channel.checkQueue(queue.queueName))) {
+          await this.client.withChannel(async channel => channel.deleteQueue(queue.queueName));
+        }
       }
+      // Delete from this.listeners
+      let removeIndex = this.listeners.findIndex(({_queueName}) => queue.queueName === _queueName);
+      console.log('index', removeIndex);
+      if (removeIndex > -1) {
+        const listener = this.listeners[removeIndex];
+        console.log(listener);
+        listener.stop();
+        this.listeners.splice(removeIndex, 1);
+      }
+      queue.remove();
     });
+  }
+
+  async terminate() {
+    debug('Deleting all queues..');
+    let Queues = [];
+    await this.Queues.scan(
+      {},
+      {
+        limit: 1000,
+        handler:(queue) => Queues.push(queue),
+      }
+    );
+    Queues.forEach(async (queue) => {   
+      if (!this.client.isFakeClient) {  
+        if (await this.client.withChannel(async channel => channel.checkQueue(queue.queueName))) {
+          await this.client.withChannel(async channel => channel.deleteQueue(queue.queueName));
+        }
+      }
+      queue.remove();
+    });
+
+    // Will cancel all consumers
+    if (!this.client.isFakeClient) {
+      this.client.stop(); 
+    }
+    this.client = undefined;
+    this.listeners = null;
   }
 
 }
