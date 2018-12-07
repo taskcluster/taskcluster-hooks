@@ -9,6 +9,7 @@ const _ = require('lodash');
 const libUrls = require('taskcluster-lib-urls');
 const {FakeClient} = require('taskcluster-lib-pulse');
 const slugid = require('slugid');
+const HookListeners = require('../src/listeners');
 
 const helper = module.exports = {};
 
@@ -21,6 +22,7 @@ helper.rootUrl = 'http://localhost:60401';
 helper.load = stickyLoader(load);
 helper.load.inject('profile', 'test');
 helper.load.inject('process', 'test');
+helper.load.inject('pulseclient', new FakeClient());
 
 helper.secrets = new Secrets({
   secretName: 'project/taskcluster/testing/taskcluster-hooks',
@@ -63,7 +65,7 @@ helper.withHook = (mock, skipping) => {
 
   const cleanup = async () => {
     if (!skipping()) {
-      await helper.Hook.scan({}, {handler: hook => hook.remove()});
+      await helper.Hook.scan({}, {handler: async (hook) => { await hook.remove();}});
     }
   };
   setup(cleanup);
@@ -136,6 +138,7 @@ helper.withTaskCreator = function(mock, skipping) {
  * queue.
  */
 helper.withPulse = (mock, skipping) => {
+  let Listener;
   suiteSetup(async function() {
     if (skipping()) {
       return;
@@ -145,7 +148,6 @@ helper.withPulse = (mock, skipping) => {
 
     await helper.load('cfg');
     helper.publisher = await helper.load('publisher');
-
     helper.checkNextMessage = (exchange, check) => {
       for (let i = 0; i < helper.messages.length; i++) {
         const message = helper.messages[i];
@@ -167,6 +169,7 @@ helper.withPulse = (mock, skipping) => {
     };
   });
 
+<<<<<<< 4678f21f6e1a9da3093d3ed39347b0b659093bc5
   const recordMessage = msg => helper.messages.push(msg);
   setup(function() {
     helper.messages = [];
@@ -175,7 +178,69 @@ helper.withPulse = (mock, skipping) => {
 
   teardown(async function() {
     helper.publisher.removeListener('message', recordMessage);
+=======
+  const fakePublish = msg => { helper.messages.push(msg); };
+  setup(async function() {
+    helper.messages = [];
+    helper.publisher.on('fakePublish', fakePublish);
+    if (helper.Listener) {
+      await helper.Listener.terminate();
+      helper.Listener = null;
+    }
+    let Hook = await helper.load('Hook');
+    let Queues = await helper.load('Queues');
+    let taskcreator = await helper.load('taskcreator');
+    
+    helper.Listener = new HookListeners({
+      Hook,
+      Queues,
+      taskcreator,
+      client: new FakeClient(),
+    });
+
+    await helper.Listener.setup();
   });
+
+  suiteTeardown(async function() {
+    helper.publisher.removeListener('fakePublish', fakePublish);
+    if (helper.Listener) {
+      await helper.Listener.terminate();
+      helper.Listener = null;
+    }
+  });
+};
+
+/**
+ * Set helper.Queues to a set-up Queues entity (and inject it into the loader)
+ */
+helper.withQueues = (mock, skipping) => {
+  suiteSetup(async function() {
+    if (skipping()) {
+      return;
+    }
+
+    if (mock) {
+      console.log('mocking Queues');
+      const cfg = await helper.load('cfg');
+      helper.load.inject('Queues', data.Queues.setup({
+        tableName: cfg.app.queuesTableName,
+        credentials: 'inMemory',
+        signingKey: cfg.azure.signingKey,
+      }));
+    }
+
+    helper.Queues = await helper.load('Queues');
+    await helper.Queues.ensureTable();
+>>>>>>> adds tests for the pulse hooks and triggering
+  });
+
+  const cleanup = async () => {
+    if (!skipping()) {
+      await helper.Queues.scan({}, {handler: async (queue) => await queue.remove()});
+    }
+  };
+  setup(cleanup);
+  suiteTeardown(cleanup);
 };
 
 /**
