@@ -313,9 +313,9 @@ builder.declare({
         '{{message}} in {{schedElement}}', {message: err.message, schedElement});
     }
   }
-
   await hook.modify((hook) => {
     hook.metadata          = hookDef.metadata;
+    hook.bindings          = hookDef.bindings;
     hook.task              = hookDef.task;
     hook.triggerSchema     = hookDef.triggerSchema;
     hook.schedule          = schedule;

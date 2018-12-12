@@ -61,7 +61,7 @@ class HookListeners {
   }
 
   /** Create a new pulse consumer for a hook */
-  async createListener({hook, oldBindings}) {
+  async createListener(hook) {
     this.hook = hook;
     const client =  this.client;
     const queueName = `${hook.hookGroupId}/${hook.hookId}`; // serves as unique id for every listener
@@ -74,14 +74,6 @@ class HookListeners {
       // Fire the hook
       await this.taskcreator.fire(hook, {firedBy:'pulseMessage', payload});
     });
-    if (!this.client.isFakeClient) {
-      for (let {exchange, routingKeyPattern} of oldBindings) {
-        await this.client.withChannel(async channel => channel.unbindQueue(queueName, exchange, routingKeyPattern));
-      }
-      for (let {exchange, routingKeyPattern} of hook.bindings) {
-        await this.client.withChannel(async channel => {channel.bindQueue(queueName, exchange, routingKeyPattern);});
-      }
-    }
     this.listeners.push(listener);
   }
 
@@ -94,6 +86,22 @@ class HookListeners {
     }
   };
   
+  /** Add / Remove bindings from he queue */
+  async syncBindings(queueName, newBindings, oldBindings) {
+    debug(`Updating the bindings of ${queueName}`);
+    if (!this.client.isFakeClient) {
+      let intersection = _.intersectionWith(oldBindings, newBindings, _.isEqual);
+      oldBindings = _.differenceWith(oldBindings, intersection, _.isEqual);
+      newBindings = _.differenceWith(newBindings, intersection, _.isEqual);
+      for (let {exchange, routingKeyPattern} of oldBindings) {
+        await this.client.withChannel(async channel => channel.unbindQueue(queueName, exchange, routingKeyPattern));
+      }
+      for (let {exchange, routingKeyPattern} of newBindings) {
+        await this.client.withChannel(async channel => channel.bindQueue(queueName, exchange, routingKeyPattern));
+      }
+    }
+  };
+
   async reconcileConsumers() {
     let Queues = [];
     let allHooksData = [];
@@ -104,30 +112,33 @@ class HookListeners {
         handler:(queue) => Queues.push(queue),
       }
     );
-    let continuationToken = undefined;
     
-    do {
-      allHooksData  = await this.Hook.scan({}, {
-        limit: 1000,
-        continuation: continuationToken,
-      });
-      continuationToken = allHooksData.continuation;
-      allHooksData.entries.forEach(async (hook) => {
+    await this.Hook.scan({}, {
+      limit: 1000,
+      handler: async (hook) => {
         if (hook.bindings.length != 0) {
           const {hookGroupId, hookId} = hook;
           const queue = _.find(Queues, {hookGroupId, hookId});
           if (queue) {
-            const index = this.listeners.findIndex(({_queueName}) => listener._queueName === queue.queueName);
+            const index = this.listeners.findIndex(({_queueName}) => _queueName === queue.queueName);
             if (index == -1) {
               debug('Existing queue..creating listener');
-              await this.createListener({hook, oldBindings: queue.bindings});
+              await this.createListener(hook);
             }
             _.pull(Queues, queue);
+            // update the bindings of the queue to be in sync with that in the Hooks table
+            await this.syncBindings(queue.queueName, hook.bindings, queue.bindings);
+            // update the bindings in the Queues Azure table
+            await queue.modify((queue) => {
+              queue.bindings = hook.bindings;
+            });
           } else {
             debug('New queue..creating listener');
-            await this.createListener({hook, oldBindings: []});
+            await this.createListener(hook);
+            const queueName = `${hookGroupId}/${hookId}`;
+            await this.syncBindings(queueName, hook.bindings, []);
             // Add to Queues table
-            debug('adding to Queues table');
+            debug('Adding to Queues table');
             await this.Queues.create({
               hookGroupId,
               hookId,
@@ -136,9 +147,9 @@ class HookListeners {
             });
           }
         }
-      });
-    } while (continuationToken);
-    
+      },
+    });
+  
     // Delete the queues now left in the Queues list.
     Queues.forEach(async (queue) => {     
       // Delete the amqp queue
