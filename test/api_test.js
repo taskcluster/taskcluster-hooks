@@ -698,7 +698,7 @@ helper.secrets.mockSuite('api_test.js', ['taskcluster'], function(mock, skipping
       assert(createdListener);
       const queue = await helper.Queues.load({hookGroupId: 'foo', hookId: 'bar'}, true);
       const bindings = r1.bindings;
-      assume(queue.bindings).deep.equals.bindings;
+      assume(queue.bindings).deep.equals(bindings);
     });
 
     test('triggers hook with a pulse message', async () => {

@@ -65,13 +65,11 @@ class HookListeners {
     const queueName = `${hook.hookGroupId}/${hook.hookId}`; // serves as unique id for every listener
     const listener = await pulse.consume({
       client,      
-      queueName: queueName, 
+      queueName, 
       maxLength : 50,
     }, async ({payload}) => {
       const hook = this.hook;
-      // Pass empty functions in res which are executed by `triggerHookCommon`
-      // This is more of a hack so that if the payload doesnt validate against
-      // `triggerSchema`,git  we can simply ignore the message.
+      // Fire the hook
       await this.taskcreator.fire(hook, {firedBy:'pulseMessage', payload});
     });
     if (!this.client.isFakeClient) {
@@ -84,6 +82,15 @@ class HookListeners {
     }
     this.listeners.push(listener);
   }
+
+  /** Deletes the amqp queue if it exists for a real pulse client */
+  async deleteQueue(queueName) {
+    if (!this.client.isFakeClient) {
+      if (await this.client.withChannel(async channel => channel.checkQueue(queueName))) {
+        await this.client.withChannel(async channel => channel.deleteQueue(queueName));
+      }
+    }
+  };
   
   async reconcileConsumers() {
     let Queues = [];
@@ -104,7 +111,7 @@ class HookListeners {
       });
       continuationToken = allHooksData.continuation;
       allHooksData.entries.forEach(async (hook) => {
-        if (hook.bindings != []) {
+        if (hook.bindings.length != 0) {
           const {hookGroupId, hookId} = hook;
           const queue = _.find(Queues, {hookGroupId, hookId});
           if (queue) {
@@ -116,7 +123,7 @@ class HookListeners {
             _.pull(Queues, queue);
           } else {
             debug('New queue..creating listener');
-            await this.createListener({hook, oldBindings: [{}]});
+            await this.createListener({hook, oldBindings: []});
             // Add to Queues table
             debug('adding to Queues table');
             await this.Queues.create({
@@ -132,11 +139,8 @@ class HookListeners {
     
     // Delete the queues now left in the Queues list.
     Queues.forEach(async (queue) => {     
-      if (!this.client.isFakeClient) {
-        if (await this.client.withChannel(async channel => channel.checkQueue(queue.queueName))) {
-          await this.client.withChannel(async channel => channel.deleteQueue(queue.queueName));
-        }
-      }
+      // Delete the amqp queue
+      await this.deleteQueue(queue.queueName);
       // Delete from this.listeners
       let removeIndex = this.listeners.findIndex(({_queueName}) => queue.queueName === _queueName);
       if (removeIndex > -1) {
@@ -144,37 +148,32 @@ class HookListeners {
         listener.stop();
         this.listeners.splice(removeIndex, 1);
       }
-      queue.remove();
+      await queue.remove();
     });
   }
 
   async terminate() {
     debug('Deleting all queues..');
-    let Queues = [];
     await this.Queues.scan(
       {},
       {
         limit: 1000,
-        handler:(queue) => Queues.push(queue),
+        handler: async (queue) => {
+          // Delete the amqp queue
+          await this.deleteQueue(queue.queueName);
+          await queue.remove();
+        },
       }
     );
-    Queues.forEach(async (queue) => {   
-      if (!this.client.isFakeClient) {  
-        if (await this.client.withChannel(async channel => channel.checkQueue(queue.queueName))) {
-          await this.client.withChannel(async channel => channel.deleteQueue(queue.queueName));
-        }
-      }
-      queue.remove();
-    });
 
-    // Will cancel all consumers
+    // stop all consumers instead
     if (!this.client.isFakeClient) {
-      this.client.stop(); 
+      this.listeners.forEach((consumer) => {
+        consumer.stop();
+      });
     }
-    this.client = undefined;
     this.listeners = null;
   }
-
 }
 
 module.exports = HookListeners;
