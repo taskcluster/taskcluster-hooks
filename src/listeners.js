@@ -56,6 +56,8 @@ class HookListeners {
     debug('Listening to hook exchanges');
     this.pulseHookChangedListener = consumer;
     this.listeners = [];
+    // Reconcile on start up
+    await this.reconcileConsumers();
   }
 
   /** Create a new pulse consumer for a hook */
