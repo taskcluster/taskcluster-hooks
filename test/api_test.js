@@ -77,6 +77,9 @@ helper.secrets.mockSuite('api_test.js', ['taskcluster'], function(mock, skipping
   const hookWithBindings = _.defaults({
     bindings: [{exchange: `exchanges/test/${unique}`, routingKeyPattern: 'amongst.rockets.wizards'}],
   }, hookWithHookIds);
+  const hookWithNewBindings = _.defaults({
+    bindings: [{exchange: `exchanges/test-new/${unique}`, routingKeyPattern: 'amongst.new.rockets.and.wizards'}],
+  }, hookWithHookIds);  
 
   const setHookLastFire = async (hookGroupId, hookId, lastFire) => {
     const hook = await helper.Hook.load({hookGroupId, hookId}, true);
@@ -684,7 +687,7 @@ helper.secrets.mockSuite('api_test.js', ['taskcluster'], function(mock, skipping
     test('hook-created message creates a new listener', async () => {
       const r1 = await helper.hooks.createHook('foo', 'bar', hookWithBindings);
       let createdListener = false;
-      helper.Listener.createListener = async ({hook, oldBindings}) => {
+      helper.Listener.createListener = async (hook) => {
         if (hook.hookId==='bar' && hook.hookGroupId==='foo' && _.isEqual(hook.bindings, r1.bindings)) {
           createdListener = true;
         }
@@ -697,8 +700,7 @@ helper.secrets.mockSuite('api_test.js', ['taskcluster'], function(mock, skipping
       });
       assert(createdListener);
       const queue = await helper.Queues.load({hookGroupId: 'foo', hookId: 'bar'}, true);
-      const bindings = r1.bindings;
-      assume(queue.bindings).deep.equals(bindings);
+      assume(queue.bindings).deep.equals(r1.bindings);
     });
 
     test('triggers hook with a pulse message', async () => {
@@ -719,6 +721,25 @@ helper.secrets.mockSuite('api_test.js', ['taskcluster'], function(mock, skipping
       }]);
     });
 
+    test('updating a hook updates bindings of queue', async () => {
+      await helper.hooks.createHook('foo', 'bar', hookWithBindings);
+      await helper.Listener.pulseHookChangedListener.fakeMessage({
+        payload: {
+          hookId:'bar',
+          hookGroupId:'foo',
+        }, exchange:'exchange/taskcluster-hooks/v1/hook-created',
+      });
+      const r1 = await helper.hooks.updateHook('foo', 'bar', hookWithNewBindings);
+      await helper.Listener.pulseHookChangedListener.fakeMessage({
+        payload: {
+          hookId:'bar',
+          hookGroupId:'foo',
+        }, exchange:'exchange/taskcluster-hooks/v1/hook-updated',
+      });
+      const queue = await helper.Queues.load({hookGroupId: 'foo', hookId: 'bar'}, true);
+      assume(queue.bindings).deep.equals(r1.bindings);
+    });
+
     test('removing a hook removes the queue', async () => {
       const r1 = await helper.hooks.createHook('foo', 'bar', hookWithBindings);
       await helper.Listener.pulseHookChangedListener.fakeMessage({
@@ -734,7 +755,6 @@ helper.secrets.mockSuite('api_test.js', ['taskcluster'], function(mock, skipping
           hookGroupId:'foo',
         }, exchange:'exchange/taskcluster-hooks/v1/hook-deleted',
       });
-
       const queue = await helper.Queues.load({hookGroupId: 'foo', hookId: 'bar'}, true);
       assert.equal(queue, null);
     });
