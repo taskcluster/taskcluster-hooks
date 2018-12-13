@@ -313,6 +313,7 @@ builder.declare({
         '{{message}} in {{schedElement}}', {message: err.message, schedElement});
     }
   }
+  hookDef.bindings = _.defaultTo(hookDef.bindings, hook.bindings);
   await hook.modify((hook) => {
     hook.metadata          = hookDef.metadata;
     hook.bindings          = hookDef.bindings;

@@ -84,7 +84,7 @@ class HookListeners {
         await this.client.withChannel(async channel => channel.deleteQueue(queueName));
       }
     }
-  };
+  }
   
   /** Add / Remove bindings from he queue */
   async syncBindings(queueName, newBindings, oldBindings) {
@@ -100,7 +100,7 @@ class HookListeners {
         await this.client.withChannel(async channel => channel.bindQueue(queueName, exchange, routingKeyPattern));
       }
     }
-  };
+  }
 
   async reconcileConsumers() {
     let Queues = [];
