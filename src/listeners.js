@@ -25,6 +25,7 @@ class HookListeners {
     this.client = options.client;
     this.pulseHookChangedListener = null;
     this.listeners = null;
+    this._reconcileDone = Promise.resolve();
   }
 
   /**
@@ -102,66 +103,71 @@ class HookListeners {
     }
   }
 
-  async reconcileConsumers() {
-    let Queues = [];
-    let allHooksData = [];
-    await this.Queues.scan(
-      {},
-      {
-        limit: 1000,
-        handler:(queue) => Queues.push(queue),
-      }
-    );
-    
-    await this.Hook.scan({}, {
-      limit: 1000,
-      handler: async (hook) => {
-        if (hook.bindings.length != 0) {
-          const {hookGroupId, hookId} = hook;
-          const queue = _.find(Queues, {hookGroupId, hookId});
-          if (queue) {
-            const index = this.listeners.findIndex(({_queueName}) => _queueName === queue.queueName);
-            if (index == -1) {
-              debug('Existing queue..creating listener');
-              await this.createListener(hook);
-            }
-            _.pull(Queues, queue);
-            // update the bindings of the queue to be in sync with that in the Hooks table
-            await this.syncBindings(queue.queueName, hook.bindings, queue.bindings);
-            // update the bindings in the Queues Azure table
-            await queue.modify((queue) => {
-              queue.bindings = hook.bindings;
-            });
-          } else {
-            debug('New queue..creating listener');
-            await this.createListener(hook);
-            const queueName = `${hookGroupId}/${hookId}`;
-            await this.syncBindings(queueName, hook.bindings, []);
-            // Add to Queues table
-            debug('Adding to Queues table');
-            await this.Queues.create({
-              hookGroupId,
-              hookId,
-              queueName: `${hookGroupId}/${hookId}`,
-              bindings: hook.bindings,
-            });
-          }
+  _synchronise(asyncfunc) {
+    return this._reconcileDone = this._reconcileDone.then(asyncfunc).catch(() => {});
+  }
+
+  reconcileConsumers() {
+    return this._synchronise(async () => {
+      let Queues = [];
+      await this.Queues.scan(
+        {},
+        {
+          limit: 1000,
+          handler:(queue) => Queues.push(queue),
         }
-      },
-    });
-  
-    // Delete the queues now left in the Queues list.
-    Queues.forEach(async (queue) => {     
-      // Delete the amqp queue
-      await this.deleteQueue(queue.queueName);
-      // Delete from this.listeners
-      let removeIndex = this.listeners.findIndex(({_queueName}) => queue.queueName === _queueName);
-      if (removeIndex > -1) {
-        const listener = this.listeners[removeIndex];
-        listener.stop();
-        this.listeners.splice(removeIndex, 1);
-      }
-      await queue.remove();
+      );
+      
+      await this.Hook.scan({}, {
+        limit: 1000,
+        handler: async (hook) => {
+          if (hook.bindings.length != 0) {
+            const {hookGroupId, hookId} = hook;
+            const queue = _.find(Queues, {hookGroupId, hookId});
+            if (queue) {
+              const index = this.listeners.findIndex(({_queueName}) => _queueName === queue.queueName);
+              if (index == -1) {
+                debug('Existing queue..creating listener');
+                await this.createListener(hook);
+              }
+              _.pull(Queues, queue);
+              // update the bindings of the queue to be in sync with that in the Hooks table
+              await this.syncBindings(queue.queueName, hook.bindings, queue.bindings);
+              // update the bindings in the Queues Azure table
+              await queue.modify((queue) => {
+                queue.bindings = hook.bindings;
+              });
+            } else {
+              debug('New queue..creating listener');
+              await this.createListener(hook);
+              const queueName = `${hookGroupId}/${hookId}`;
+              await this.syncBindings(queueName, hook.bindings, []);
+              // Add to Queues table
+              debug('Adding to Queues table');
+              await this.Queues.create({
+                hookGroupId,
+                hookId,
+                queueName: `${hookGroupId}/${hookId}`,
+                bindings: hook.bindings,
+              });
+            }
+          }
+        },
+      });
+    
+      // Delete the queues now left in the Queues list.
+      Queues.forEach(async (queue) => {  
+        // Delete the amqp queue
+        await this.deleteQueue(queue.queueName);
+        // Delete from this.listeners
+        let removeIndex = this.listeners.findIndex(({_queueName}) => queue.queueName === _queueName);
+        if (removeIndex > -1) {
+          const listener = this.listeners[removeIndex];
+          listener.stop();
+          this.listeners.splice(removeIndex, 1);
+        }
+        await queue.remove();
+      });
     });
   }
 
