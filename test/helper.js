@@ -220,7 +220,6 @@ helper.withQueues = (mock, skipping) => {
     }
 
     if (mock) {
-      console.log('mocking Queues');
       const cfg = await helper.load('cfg');
       helper.load.inject('Queues', data.Queues.setup({
         tableName: cfg.app.queuesTableName,

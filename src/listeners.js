@@ -2,7 +2,6 @@ const assert = require('assert');
 const debug = require('debug')('listeners');
 const pulse = require('taskcluster-lib-pulse');
 const _ = require('lodash');
-const {serialize} = require('async-decorators');
 
 /**
  * Create pulse client and consumers to trigger hooks with pulse messages 
@@ -39,7 +38,7 @@ class HookListeners {
 
     const client = this.client;
     let consumer = await pulse.consume({
-      client,      
+      client,
       bindings: [{
         exchange: 'exchange/taskcluster-hooks/v1/hook-created',
         routingKeyPattern: '#',
@@ -67,8 +66,8 @@ class HookListeners {
     const client =  this.client;
     const queueName = `${hook.hookGroupId}/${hook.hookId}`; // serves as unique id for every listener
     const listener = await pulse.consume({
-      client,      
-      queueName, 
+      client,
+      queueName,
       maxLength : 50,
     }, async ({payload}) => {
       const hook = this.hook;

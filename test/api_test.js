@@ -748,6 +748,8 @@ helper.secrets.mockSuite('api_test.js', ['taskcluster'], function(mock, skipping
           hookGroupId:'foo',
         }, exchange:'exchange/taskcluster-hooks/v1/hook-created',
       });
+      let queue = await helper.Queues.load({hookGroupId: 'foo', hookId: 'bar'}, true);
+      assume(queue.bindings).deep.equals(r1.bindings);
       await helper.hooks.removeHook('foo', 'bar');
       await helper.Listener.pulseHookChangedListener.fakeMessage({
         payload: {
@@ -755,7 +757,7 @@ helper.secrets.mockSuite('api_test.js', ['taskcluster'], function(mock, skipping
           hookGroupId:'foo',
         }, exchange:'exchange/taskcluster-hooks/v1/hook-deleted',
       });
-      const queue = await helper.Queues.load({hookGroupId: 'foo', hookId: 'bar'}, true);
+      queue = await helper.Queues.load({hookGroupId: 'foo', hookId: 'bar'}, true);
       assert.equal(queue, null);
     });
   });

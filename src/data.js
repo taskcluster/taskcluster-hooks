@@ -189,13 +189,6 @@ const Queues = Entity.configure({
   },
 });
 
-/** Return promise for queues definition */
-Queues.prototype.definition = function() {
-  return Promise.resolve({
-    hookId:       this.hookId,
-    hookGroupId:  this.hookGroupId,
-  });
-};
 // export Hook and Queues
 exports.Hook = Hook;
 

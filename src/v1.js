@@ -39,6 +39,8 @@ const builder = new APIBuilder({
   context: ['Hook', 'LastFire', 'taskcreator', 'publisher'],
 });
 
+module.exports = builder;
+
 /** Get hook groups **/
 builder.declare({
   method:       'get',
