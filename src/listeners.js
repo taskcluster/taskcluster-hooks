@@ -108,12 +108,12 @@ class HookListeners {
 
   reconcileConsumers() {
     return this._synchronise(async () => {
-      let Queues = [];
+      let queues = [];
       await this.Queues.scan(
         {},
         {
           limit: 1000,
-          handler:(queue) => Queues.push(queue),
+          handler:(queue) => queues.push(queue),
         }
       );
       
@@ -122,14 +122,14 @@ class HookListeners {
         handler: async (hook) => {
           if (hook.bindings.length != 0) {
             const {hookGroupId, hookId} = hook;
-            const queue = _.find(Queues, {hookGroupId, hookId});
+            const queue = _.find(queues, {hookGroupId, hookId});
             if (queue) {
               const index = this.listeners.findIndex(({_queueName}) => _queueName === queue.queueName);
               if (index == -1) {
                 debug('Existing queue..creating listener');
                 await this.createListener(hook);
               }
-              _.pull(Queues, queue);
+              _.pull(queues, queue);
               // update the bindings of the queue to be in sync with that in the Hooks table
               await this.syncBindings(queue.queueName, hook.bindings, queue.bindings);
               // update the bindings in the Queues Azure table
@@ -154,8 +154,8 @@ class HookListeners {
         },
       });
     
-      // Delete the queues now left in the Queues list.
-      Queues.forEach(async (queue) => {  
+      // Delete the queues now left in the queues list.
+      for (let queue of queues) {
         // Delete the amqp queue
         await this.deleteQueue(queue.queueName);
         // Delete from this.listeners
@@ -166,7 +166,7 @@ class HookListeners {
           this.listeners.splice(removeIndex, 1);
         }
         await queue.remove();
-      });
+      }
     });
   }
 
