@@ -77,6 +77,21 @@ class HookListeners {
     this.listeners.push(listener);
   }
 
+  /** Delete a listener for the given queueName  */
+  async removeListener(queueName) {
+    let removeIndex = this.listeners.findIndex(({_queueName}) => _queueName === queueName);
+    if (removeIndex > -1) {
+      const listener = this.listeners[removeIndex];
+      await listener.stop();
+      this.listeners.splice(removeIndex, 1);
+    }
+  }
+
+  haveListener(queueName) {
+    const index = this.listeners.findIndex(({_queueName}) => _queueName === queueName);
+    return index > -1;
+  }
+
   /** Deletes the amqp queue if it exists for a real pulse client */
   async deleteQueue(queueName) {
     if (!this.client.isFakeClient) {
@@ -124,8 +139,7 @@ class HookListeners {
             const {hookGroupId, hookId} = hook;
             const queue = _.find(queues, {hookGroupId, hookId});
             if (queue) {
-              const index = this.listeners.findIndex(({_queueName}) => _queueName === queue.queueName);
-              if (index == -1) {
+              if (!this.haveListener(queue.queueName)) {
                 debug('Existing queue..creating listener');
                 await this.createListener(hook);
               }
@@ -159,12 +173,7 @@ class HookListeners {
         // Delete the amqp queue
         await this.deleteQueue(queue.queueName);
         // Delete from this.listeners
-        let removeIndex = this.listeners.findIndex(({_queueName}) => queue.queueName === _queueName);
-        if (removeIndex > -1) {
-          const listener = this.listeners[removeIndex];
-          listener.stop();
-          this.listeners.splice(removeIndex, 1);
-        }
+        await this.removeListener(queue.queueName);
         await queue.remove();
       }
     });
@@ -186,8 +195,8 @@ class HookListeners {
 
     // stop all consumers instead
     if (!this.client.isFakeClient) {
-      this.listeners.forEach((consumer) => {
-        consumer.stop();
+      this.listeners.forEach(async (consumer) => {
+        await consumer.stop();
       });
     }
     this.listeners = null;
