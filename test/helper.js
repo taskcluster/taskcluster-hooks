@@ -22,7 +22,7 @@ helper.rootUrl = 'http://localhost:60401';
 helper.load = stickyLoader(load);
 helper.load.inject('profile', 'test');
 helper.load.inject('process', 'test');
-helper.load.inject('pulseclient', new FakeClient());
+helper.load.inject('pulseClient', new FakeClient());
 
 helper.secrets = new Secrets({
   secretName: 'project/taskcluster/testing/taskcluster-hooks',
@@ -144,8 +144,6 @@ helper.withPulse = (mock, skipping) => {
       return;
     }
 
-    helper.load.inject('pulseClient', new FakeClient());
-
     await helper.load('cfg');
     helper.publisher = await helper.load('publisher');
     helper.checkNextMessage = (exchange, check) => {
@@ -169,27 +167,17 @@ helper.withPulse = (mock, skipping) => {
     };
   });
 
-<<<<<<< 4678f21f6e1a9da3093d3ed39347b0b659093bc5
   const recordMessage = msg => helper.messages.push(msg);
-  setup(function() {
-    helper.messages = [];
-    helper.publisher.on('message', recordMessage);
-  });
-
-  teardown(async function() {
-    helper.publisher.removeListener('message', recordMessage);
-=======
-  const fakePublish = msg => { helper.messages.push(msg); };
   setup(async function() {
     helper.messages = [];
-    helper.publisher.on('fakePublish', fakePublish);
+    helper.publisher.on('message', recordMessage);
     if (helper.Listener) {
       await helper.Listener.terminate();
       helper.Listener = null;
     }
-    let Hook = await helper.load('Hook');
-    let Queues = await helper.load('Queues');
-    let taskcreator = await helper.load('taskcreator');
+    let Hook = helper.Hook;
+    let Queues = helper.Queues;
+    let taskcreator = helper.creator;
     
     helper.Listener = new HookListeners({
       Hook,
@@ -201,8 +189,11 @@ helper.withPulse = (mock, skipping) => {
     await helper.Listener.setup();
   });
 
+  teardown(async function() {
+    helper.publisher.removeListener('message', recordMessage);
+  });
+
   suiteTeardown(async function() {
-    helper.publisher.removeListener('fakePublish', fakePublish);
     if (helper.Listener) {
       await helper.Listener.terminate();
       helper.Listener = null;
@@ -230,7 +221,6 @@ helper.withQueues = (mock, skipping) => {
 
     helper.Queues = await helper.load('Queues');
     await helper.Queues.ensureTable();
->>>>>>> adds tests for the pulse hooks and triggering
   });
 
   const cleanup = async () => {

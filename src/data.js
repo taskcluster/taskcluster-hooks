@@ -191,6 +191,7 @@ const Queues = Entity.configure({
 
 // export Hook and Queues
 exports.Hook = Hook;
+exports.Queues = Queues;
 
 const LastFire = Entity.configure({
   version:              1,
@@ -222,4 +223,3 @@ LastFire.prototype.definition = function() {
 
 // export LastFire
 exports.LastFire = LastFire;
-exports.Queues = Queues;

@@ -8,11 +8,8 @@ const helper = require('./helper');
 
 helper.secrets.mockSuite('api_test.js', ['taskcluster'], function(mock, skipping) {
   helper.withHook(mock, skipping);
-<<<<<<< 4678f21f6e1a9da3093d3ed39347b0b659093bc5
   helper.withLastFire(mock, skipping);
-=======
   helper.withQueues(mock, skipping);
->>>>>>> adds tests for the pulse hooks and triggering
   helper.withTaskCreator(mock, skipping);
   helper.withPulse(mock, skipping);
   helper.withServer(mock, skipping);
@@ -661,6 +658,7 @@ helper.secrets.mockSuite('api_test.js', ['taskcluster'], function(mock, skipping
       assume(taskIds).eql(dataTaskIds);
     });
   });
+
   suite('pulseHooks', function() {
     subSkip();
     test('creates hook', async () => {

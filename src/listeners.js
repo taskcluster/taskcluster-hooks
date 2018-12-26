@@ -9,6 +9,7 @@ const _ = require('lodash');
  * options:
  * {
  *   Hook:               // Azure tables for hooks
+ *   Queues:             // Azure tables for AMQP queues
  *   taskcreator:        // A TaskCreator instance
  *   client:            // A tc-lib-pulse client instance
  * }
@@ -135,7 +136,7 @@ class HookListeners {
       await this.Hook.scan({}, {
         limit: 1000,
         handler: async (hook) => {
-          if (hook.bindings.length != 0) {
+          if (hook.bindings.length !== 0) {
             const {hookGroupId, hookId} = hook;
             const queue = _.find(queues, {hookGroupId, hookId});
             if (queue) {

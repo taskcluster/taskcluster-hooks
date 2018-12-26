@@ -85,7 +85,7 @@ builder.declare({
       hooks.push(await hook.definition());
     },
   });
-  if (hooks.length == 0) {
+  if (hooks.length === 0) {
     return res.reportError('ResourceNotFound', 'No such group', {});
   }
   return res.reply({hooks: hooks});
@@ -588,4 +588,3 @@ builder.declare({
   }
   return res.reply({lastFires: lastFires});
 });
-module.exports = {builder, triggerHookCommon};

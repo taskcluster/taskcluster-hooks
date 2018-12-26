@@ -18,7 +18,6 @@ const {sasCredentials} = require('taskcluster-lib-azure');
 const exchanges = require('./exchanges');
 const libPulse = require('taskcluster-lib-pulse');
 const HookListeners = require('./listeners');
-const pulse = require('taskcluster-lib-pulse');
 
 // Create component loader
 const load = loader({
@@ -158,25 +157,14 @@ const load = loader({
     },
   },
 
-  pulseclient: {
-    requires: ['cfg', 'monitor'],
-    setup: async ({cfg, monitor}) => {
-      return new pulse.Client({
-        namespace: cfg.pulse.namespace,
-        credentials: pulse.pulseCredentials(cfg.pulse),
-        monitor,
-      });
-    },
-  },
-
   listeners: {
-    requires: ['Hook', 'taskcreator', 'Queues', 'pulseclient'],
-    setup: async ({Hook, taskcreator, Queues, pulseclient}) => {
+    requires: ['Hook', 'taskcreator', 'Queues', 'pulseClient'],
+    setup: async ({Hook, taskcreator, Queues, pulseClient}) => {
       let Listener = new HookListeners({
         Hook,
         Queues,
         taskcreator,
-        client: pulseclient,
+        client: pulseClient,
       });
       await Listener.setup();
       return Listener;
